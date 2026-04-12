@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { authenticateToken, requireRole } from '../middleware/auth.js';
 import { validate } from '../middleware/validation.js';
-import { upload } from '../middleware/upload.js';
+import { upload, uploadSubmission } from '../middleware/upload.js';
 import * as assignmentsController from '../controllers/assignmentsController.js';
 
 const router = Router();
@@ -12,11 +12,6 @@ const createAssignmentSchema = z.object({
   instructions: z.string().optional().default(''),
   dueDate: z.string().optional(),
   points: z.coerce.number().optional().default(100)
-});
-
-const submitSchema = z.object({
-  submissionText: z.string().optional().default(''),
-  fileUrl: z.string().optional()
 });
 
 const gradeSchema = z.object({
@@ -43,13 +38,32 @@ router.put('/:assignmentId', authenticateToken, requireRole('teacher'), validate
 router.delete('/:assignmentId', authenticateToken, requireRole('teacher'), assignmentsController.deleteAssignment);
 
 // Submit assignment (students)
-router.post('/:assignmentId/submit', authenticateToken, upload.single('file'), validate(submitSchema), assignmentsController.submitAssignment);
+router.post(
+  '/:assignmentId/submit',
+  authenticateToken,
+  requireRole('student'),
+  uploadSubmission,
+  assignmentsController.submitAssignment
+);
+
+// Unsubmit assignment (students)
+router.post(
+  '/:assignmentId/unsubmit',
+  authenticateToken,
+  requireRole('student'),
+  assignmentsController.unsubmitAssignment
+);
 
 // Get submissions for assignment (teacher only)
 router.get('/:assignmentId/submissions', authenticateToken, requireRole('teacher'), assignmentsController.getSubmissions);
 
 // Get student's submission
-router.get('/:assignmentId/my-submission', authenticateToken, assignmentsController.getStudentSubmission);
+router.get(
+  '/:assignmentId/my-submission',
+  authenticateToken,
+  requireRole('student'),
+  assignmentsController.getStudentSubmission
+);
 
 // Grade submission (teacher only)
 router.put('/:submissionId/grade', authenticateToken, requireRole('teacher'), validate(gradeSchema), assignmentsController.gradeSubmission);

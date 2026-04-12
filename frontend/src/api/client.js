@@ -34,11 +34,20 @@ export const coursesAPI = {
   list: () => api.get('/courses'),
   get: (id) => api.get(`/courses/${id}`),
   create: (data) => api.post('/courses', data),
+  createModule: (courseId, data) => api.post(`/courses/${courseId}/modules`, data),
   update: (id, data) => api.put(`/courses/${id}`, data),
   delete: (id) => api.delete(`/courses/${id}`),
   enrollByCode: (data) => api.post('/courses/enroll/code', data),
   getEnrollments: (id) => api.get(`/courses/${id}/enrollments`),
   getInviteCode: (id) => api.get(`/courses/${id}/invite-code`),
+};
+
+export const modulesAPI = {
+  createLesson: (moduleId, data) => api.post(`/modules/${moduleId}/lessons`, data),
+};
+
+export const lessonsAPI = {
+  attachVideo: (lessonId, data) => api.post(`/lessons/${lessonId}/videos`, data),
 };
 
 // Assignments API
@@ -67,15 +76,21 @@ export const assignmentsAPI = {
   update: (id, data) => api.put(`/assignments/${id}`, data),
   delete: (id) => api.delete(`/assignments/${id}`),
   submit: (id, data) => {
+    const file = data?.file instanceof File ? data.file : data?.file?.[0];
     const formData = new FormData();
-    formData.append('submissionText', data.submissionText || '');
-    if (data.file) {
-      formData.append('file', data.file);
+    const driveLink = data?.drive_link ?? data?.driveLink ?? data?.linkUrl ?? '';
+    const textComment = data?.text_comment ?? data?.textComment ?? data?.submissionText ?? '';
+
+    formData.append('drive_link', driveLink || '');
+    formData.append('text_comment', textComment || '');
+    if (file) {
+      formData.append('file', file);
     }
     return api.post(`/assignments/${id}/submit`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
   },
+  unsubmit: (id) => api.post(`/assignments/${id}/unsubmit`),
   getSubmissions: (id) => api.get(`/assignments/${id}/submissions`),
   getStudentSubmission: (id) => api.get(`/assignments/${id}/my-submission`),
   grade: (id, data) => api.put(`/assignments/${id}/grade`, data),

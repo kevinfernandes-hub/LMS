@@ -15,6 +15,8 @@ import announcementsRoutes from './routes/announcements.js';
 import materialsRoutes from './routes/materials.js';
 import notificationsRoutes from './routes/notifications.js';
 import adminRoutes from './routes/admin.js';
+import modulesRoutes from './routes/modules.js';
+import lessonsRoutes from './routes/lessons.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -41,6 +43,8 @@ app.use('/api/announcements', announcementsRoutes);
 app.use('/api/materials', materialsRoutes);
 app.use('/api/notifications', notificationsRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/modules', modulesRoutes);
+app.use('/api/lessons', lessonsRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

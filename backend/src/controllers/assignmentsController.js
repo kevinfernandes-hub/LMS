@@ -167,26 +167,132 @@ export const deleteAssignment = async (req, res) => {
 export const submitAssignment = async (req, res) => {
   try {
     const { assignmentId } = req.params;
-    const { submissionText, fileUrl } = req.validatedData;
+    const studentId = req.user.id;
+    const driveLinkRaw = (req.body?.drive_link || req.body?.driveLink || req.body?.linkUrl || '').trim();
+    const textCommentRaw = (req.body?.text_comment || req.body?.textComment || req.body?.submissionText || '').trim();
+    const file = req.file;
 
-    let finalFileUrl = fileUrl;
-    if (req.file) {
-      finalFileUrl = `/uploads/${req.file.filename}`;
+    if (!file && !driveLinkRaw) {
+      return res.status(400).json({ message: 'Please attach a file or add a Google Drive link' });
     }
 
+    if (driveLinkRaw) {
+      let url;
+      try {
+        url = new URL(driveLinkRaw);
+      } catch {
+        return res.status(400).json({ message: 'Invalid Google Drive link' });
+      }
+      const host = (url.hostname || '').toLowerCase();
+      if (!(host === 'drive.google.com' || host.endsWith('.drive.google.com'))) {
+        return res.status(400).json({ message: 'Invalid Google Drive link' });
+      }
+    }
+
+    // Check assignment exists
+    const assignmentRes = await query('SELECT id, course_id FROM assignments WHERE id = $1', [assignmentId]);
+    if (assignmentRes.rows.length === 0) {
+      return res.status(404).json({ message: 'Assignment not found' });
+    }
+    const courseId = assignmentRes.rows[0].course_id;
+
+    // Check enrollment
+    const enrollmentRes = await query(
+      `SELECT 1 FROM enrollments e
+       WHERE e.user_id = $1 AND e.course_id = $2`,
+      [studentId, courseId]
+    );
+    if (enrollmentRes.rows.length === 0) {
+      return res.status(403).json({ message: 'You are not enrolled in this course' });
+    }
+
+    // Check existing submission
+    const existingRes = await query(
+      `SELECT id, grade FROM submissions
+       WHERE assignment_id = $1 AND user_id = $2`,
+      [assignmentId, studentId]
+    );
+    if (existingRes.rows.length && existingRes.rows[0].grade !== null) {
+      return res.status(400).json({ message: 'Cannot resubmit a graded assignment' });
+    }
+
+    const fileUrl = file ? `/uploads/submissions/${file.filename}` : null;
+    const fileName = file ? file.originalname : null;
+    const fileType = file ? file.mimetype : null;
+    const driveLink = driveLinkRaw || null;
+    const textComment = textCommentRaw || '';
+
     const result = await query(
-      `INSERT INTO submissions (assignment_id, user_id, submission_text, file_url, submitted_at)
-       VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP)
-       ON CONFLICT (assignment_id, user_id) 
-       DO UPDATE SET submission_text = $3, file_url = $4, submitted_at = CURRENT_TIMESTAMP
+      `INSERT INTO submissions (
+         assignment_id, user_id,
+         submission_text,
+         file_url, file_name, file_type,
+         drive_link, text_comment,
+         status,
+         submitted_at
+       )
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'submitted', CURRENT_TIMESTAMP)
+       ON CONFLICT (assignment_id, user_id)
+       DO UPDATE SET
+         submission_text = EXCLUDED.submission_text,
+         file_url = COALESCE(EXCLUDED.file_url, submissions.file_url),
+         file_name = COALESCE(EXCLUDED.file_name, submissions.file_name),
+         file_type = COALESCE(EXCLUDED.file_type, submissions.file_type),
+         drive_link = COALESCE(EXCLUDED.drive_link, submissions.drive_link),
+         text_comment = COALESCE(NULLIF(EXCLUDED.text_comment, ''), submissions.text_comment),
+         status = 'submitted',
+         submitted_at = CURRENT_TIMESTAMP
        RETURNING *`,
-      [assignmentId, req.user.id, submissionText || '', finalFileUrl || null]
+      [
+        assignmentId,
+        studentId,
+        textComment,
+        fileUrl,
+        fileName,
+        fileType,
+        driveLink,
+        textComment,
+      ]
     );
 
     res.status(201).json(result.rows[0]);
   } catch (error) {
     console.error('Submit assignment error:', error);
-    res.status(500).json({ error: 'Failed to submit assignment' });
+    res.status(500).json({ message: 'Failed to submit assignment' });
+  }
+};
+
+export const unsubmitAssignment = async (req, res) => {
+  try {
+    const { assignmentId } = req.params;
+    const studentId = req.user.id;
+
+    const existingRes = await query(
+      `SELECT id, grade FROM submissions
+       WHERE assignment_id = $1 AND user_id = $2`,
+      [assignmentId, studentId]
+    );
+
+    if (existingRes.rows.length === 0) {
+      return res.status(404).json({ message: 'No submission found' });
+    }
+
+    if (existingRes.rows[0].grade !== null) {
+      return res.status(400).json({ message: 'Cannot unsubmit a graded assignment' });
+    }
+
+    const result = await query(
+      `UPDATE submissions
+       SET status = 'draft'
+       WHERE assignment_id = $1 AND user_id = $2
+       RETURNING *`,
+      [assignmentId, studentId]
+    );
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Unsubmit assignment error:', error);
+    res.status(500).json({ message: 'Failed to unsubmit assignment' });
   }
 };
 
@@ -211,7 +317,7 @@ export const getSubmissions = async (req, res) => {
     }
 
     const result = await query(
-      `SELECT s.*, u.first_name, u.last_name, u.email
+      `SELECT s.*, (u.first_name || ' ' || u.last_name) AS student_name, u.email AS student_email
        FROM submissions s
        JOIN users u ON s.user_id = u.id
        WHERE s.assignment_id = $1
@@ -236,14 +342,10 @@ export const getStudentSubmission = async (req, res) => {
       [assignmentId, req.user.id]
     );
 
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'No submission found' });
-    }
-
-    res.json(result.rows[0]);
+    res.json(result.rows[0] || null);
   } catch (error) {
     console.error('Get submission error:', error);
-    res.status(500).json({ error: 'Failed to fetch submission' });
+    res.status(500).json({ message: 'Failed to fetch submission' });
   }
 };
 

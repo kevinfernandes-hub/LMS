@@ -13,6 +13,9 @@ DROP TABLE IF EXISTS assignments CASCADE;
 DROP TABLE IF EXISTS announcements CASCADE;
 DROP TABLE IF EXISTS course_invite_codes CASCADE;
 DROP TABLE IF EXISTS enrollments CASCADE;
+DROP TABLE IF EXISTS lesson_videos CASCADE;
+DROP TABLE IF EXISTS course_lessons CASCADE;
+DROP TABLE IF EXISTS course_modules CASCADE;
 DROP TABLE IF EXISTS courses CASCADE;
 DROP TABLE IF EXISTS valid_roll_numbers CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
@@ -49,8 +52,50 @@ CREATE TABLE courses (
   section VARCHAR(100),
   subject VARCHAR(100),
   description TEXT,
+  category VARCHAR(100),
+  difficulty VARCHAR(20) CHECK (difficulty IN ('Beginner', 'Intermediate', 'Advanced')),
+  duration_hours DECIMAL(6, 2),
+  max_students INTEGER,
+  outcomes JSONB,
+  status VARCHAR(20) DEFAULT 'published' CHECK (status IN ('draft', 'published')),
   cover_color VARCHAR(7) DEFAULT '#4F46E5',
   cover_image_url VARCHAR(500),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Course modules
+CREATE TABLE course_modules (
+  id SERIAL PRIMARY KEY,
+  course_id INTEGER NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
+  title VARCHAR(255) NOT NULL,
+  description TEXT,
+  order_index INTEGER NOT NULL DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Lessons inside modules
+CREATE TABLE course_lessons (
+  id SERIAL PRIMARY KEY,
+  module_id INTEGER NOT NULL REFERENCES course_modules(id) ON DELETE CASCADE,
+  title VARCHAR(255) NOT NULL,
+  order_index INTEGER NOT NULL DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Optional video attached to a lesson (one per lesson)
+CREATE TABLE lesson_videos (
+  id SERIAL PRIMARY KEY,
+  lesson_id INTEGER UNIQUE NOT NULL REFERENCES course_lessons(id) ON DELETE CASCADE,
+  original_url TEXT NOT NULL,
+  platform VARCHAR(10) NOT NULL CHECK (platform IN ('youtube', 'gdrive')),
+  video_id TEXT,
+  embed_url TEXT NOT NULL,
+  thumbnail_url TEXT,
+  title TEXT,
+  duration TEXT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -115,6 +160,12 @@ CREATE TABLE submissions (
   user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   submission_text TEXT,
   file_url VARCHAR(500),
+  file_name TEXT,
+  file_type TEXT,
+  drive_link TEXT,
+  text_comment TEXT,
+  status VARCHAR(20) DEFAULT 'submitted',
+  link_url VARCHAR(500),
   submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   grade DECIMAL(5, 2),
   feedback TEXT,
@@ -189,6 +240,9 @@ CREATE TABLE notifications (
 CREATE INDEX idx_users_email ON users(email);
 CREATE INDEX idx_users_roll_number ON users(roll_number);
 CREATE INDEX idx_courses_teacher_id ON courses(teacher_id);
+CREATE INDEX idx_course_modules_course_id ON course_modules(course_id);
+CREATE INDEX idx_course_lessons_module_id ON course_lessons(module_id);
+CREATE INDEX idx_lesson_videos_lesson_id ON lesson_videos(lesson_id);
 CREATE INDEX idx_enrollments_user_id ON enrollments(user_id);
 CREATE INDEX idx_enrollments_course_id ON enrollments(course_id);
 CREATE INDEX idx_announcements_course_id ON announcements(course_id);

@@ -1,24 +1,20 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { toast } from 'sonner';
 import { Card, Button, Input, Textarea, Modal, Loading } from '../../components/ui.jsx';
+import { AnimatePresence } from 'framer-motion';
 import { 
   ArrowLeft, Download, FileText, MessageSquare, CheckCircle, 
   AlertCircle, Clock, BookOpen, Users 
 } from 'lucide-react';
 import { coursesAPI, assignmentsAPI, announcementsAPI, materialsAPI } from '../../api/client.js';
-import confetti from 'canvas-confetti';
+import MaterialRow from '../../components/materials/MaterialRow.jsx';
+import YouTubeModal from '../../components/materials/YouTubeModal.jsx';
+import { extractVideoId, isGoogleDriveUrl, isYouTubeUrl, getYouTubeEmbedUrl } from '../../lib/videoUtils.js';
 
-const submitSchema = z.object({
-  submissionText: z.string().optional().default(''),
-});
-
-const commentSchema = z.object({
-  content: z.string().min(1, 'Comment cannot be empty'),
-});
+const commentSchema = {
+  content: (value) => (value && value.trim().length > 0) || 'Comment cannot be empty',
+};
 
 export default function StudentCourseDetail() {
   const { courseId } = useParams();
@@ -29,21 +25,14 @@ export default function StudentCourseDetail() {
   const [materials, setMaterials] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('assignments'); // assignments, materials, announcements, people
-  const [selectedAssignment, setSelectedAssignment] = useState(null);
-  const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [submissions, setSubmissions] = useState({});
   const [comments, setComments] = useState({});
   const [showCommentModal, setShowCommentModal] = useState(false);
   const [selectedAnnouncement, setSelectedAnnouncement] = useState(null);
-  const [submittingId, setSubmittingId] = useState(null);
 
-  const { register: registerSubmission, handleSubmit: handleSubmitAssignment, reset: resetSubmission } = useForm({
-    resolver: zodResolver(submitSchema),
-  });
+  const [videoModal, setVideoModal] = useState(null);
 
-  const { register: registerComment, handleSubmit: handleSubmitComment, reset: resetComment } = useForm({
-    resolver: zodResolver(commentSchema),
-  });
+  const [commentContent, setCommentContent] = useState('');
 
   useEffect(() => {
     fetchCourseData();
@@ -83,43 +72,20 @@ export default function StudentCourseDetail() {
     }
   };
 
-  const onSubmitAssignment = async (data) => {
-    if (!selectedAssignment) return;
-    setSubmittingId(selectedAssignment.id);
-
-    try {
-      const formData = new FormData();
-      formData.append('submissionText', data.submissionText || '');
-
-      await assignmentsAPI.submit(selectedAssignment.id, data);
-      toast.success('Assignment submitted successfully!');
-
-      // Celebration confetti
-      confetti({
-        particleCount: 100,
-        spread: 70,
-        origin: { y: 0.6 },
-      });
-
-      await fetchCourseData();
-      setShowSubmitModal(false);
-      resetSubmission();
-      setSelectedAssignment(null);
-    } catch (error) {
-      toast.error('Failed to submit assignment');
-    } finally {
-      setSubmittingId(null);
-    }
-  };
-
-  const onAddComment = async (data) => {
+  const onAddComment = async () => {
     if (!selectedAnnouncement) return;
 
+    const validation = commentSchema.content(commentContent);
+    if (validation !== true) {
+      toast.error(typeof validation === 'string' ? validation : 'Comment cannot be empty');
+      return;
+    }
+
     try {
-      await announcementsAPI.addComment(selectedAnnouncement.id, data);
+      await announcementsAPI.addComment(selectedAnnouncement.id, { content: commentContent });
       toast.success('Comment added!');
       await fetchCourseData();
-      resetComment();
+      setCommentContent('');
       setShowCommentModal(false);
     } catch (error) {
       toast.error('Failed to add comment');
@@ -144,6 +110,39 @@ export default function StudentCourseDetail() {
   };
 
   if (isLoading) return <Loading />;
+
+  const handleMaterialClick = (material) => {
+    const url = material?.link_url;
+    if (!url) return;
+
+    if (isYouTubeUrl(url)) {
+      const info = getYouTubeEmbedUrl(url);
+      if (info) {
+        setVideoModal({
+          platform: 'youtube',
+          embedUrl: info.embedUrl,
+          title: material.title || 'Video',
+          thumbnailUrl: info.thumbnailUrl,
+        });
+        return;
+      }
+    }
+
+    if (isGoogleDriveUrl(url)) {
+      const info = extractVideoId(url);
+      if (info?.embedUrl) {
+        setVideoModal({
+          platform: 'gdrive',
+          embedUrl: info.embedUrl,
+          title: material.title || 'Video',
+          thumbnailUrl: null,
+        });
+        return;
+      }
+    }
+
+    window.open(url, '_blank', 'noopener,noreferrer');
+  };
 
   return (
     <div>
@@ -241,15 +240,37 @@ export default function StudentCourseDetail() {
                           </p>
                         </div>
                       )}
+
+                      {submission && (submission.file_url || submission.drive_link || submission.link_url) && (
+                        <div className="bg-gray-50 border border-gray-100 rounded-lg p-3 mb-4 space-y-2">
+                          {submission.file_url && (
+                            <a
+                              href={submission.file_url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="block text-sm text-indigo-600 hover:underline"
+                            >
+                              Open your submitted file
+                            </a>
+                          )}
+                          {(submission.drive_link || submission.link_url) && (
+                            <a
+                              href={submission.drive_link || submission.link_url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="block text-sm text-indigo-600 hover:underline"
+                            >
+                              Open your submitted link
+                            </a>
+                          )}
+                        </div>
+                      )}
                       <Button
                         variant={submission ? 'secondary' : 'primary'}
                         size="sm"
-                        onClick={() => {
-                          setSelectedAssignment(assignment);
-                          setShowSubmitModal(true);
-                        }}
+                        onClick={() => navigate(`/student/assignment/${assignment.id}`)}
                       >
-                        {submission ? 'Resubmit' : 'Submit'}
+                        {submission ? 'View / Resubmit' : 'Turn in'}
                       </Button>
                     </div>
                   </div>
@@ -269,28 +290,27 @@ export default function StudentCourseDetail() {
               <p className="text-gray-600">No materials yet</p>
             </Card>
           ) : (
-            materials.map((material) => (
-              <Card key={material.id} className="p-6 flex items-start gap-4">
-                <FileText className="w-8 h-8 text-indigo-600 flex-shrink-0 mt-1" />
-                <div className="flex-1">
-                  <h3 className="font-bold text-gray-900 mb-1">{material.title}</h3>
-                  {material.description && (
-                    <p className="text-sm text-gray-600 mb-3">{material.description}</p>
-                  )}
-                  {material.link_url && (
-                    <a
-                      href={material.link_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-indigo-600 hover:text-indigo-700 text-sm font-semibold flex items-center gap-2"
-                    >
-                      <Download className="w-4 h-4" /> Open Material
-                    </a>
-                  )}
-                </div>
-              </Card>
-            ))
+            <div className="bg-white rounded-[12px] border border-[#E8E6F0] overflow-visible">
+              {materials.map((material) => (
+                <MaterialRow
+                  key={material.id}
+                  material={material}
+                  onClick={() => handleMaterialClick(material)}
+                />
+              ))}
+            </div>
           )}
+
+          <AnimatePresence>
+            {videoModal && (
+              <YouTubeModal
+                embedUrl={videoModal.embedUrl}
+                title={videoModal.title}
+                platform={videoModal.platform}
+                onClose={() => setVideoModal(null)}
+              />
+            )}
+          </AnimatePresence>
         </div>
       )}
 
@@ -344,78 +364,36 @@ export default function StudentCourseDetail() {
         </Card>
       )}
 
-      {/* Submit Assignment Modal */}
-      {showSubmitModal && selectedAssignment && (
-        <Modal className="max-w-2xl">
-          <div className="mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
-              Submit: {selectedAssignment.title}
-            </h2>
-            <p className="text-sm text-gray-600">
-              Due: {new Date(selectedAssignment.due_date).toLocaleDateString()}
-            </p>
-          </div>
-
-          <form onSubmit={handleSubmitAssignment(onSubmitAssignment)} className="space-y-6">
-            <Textarea
-              label="Your Answer"
-              placeholder="Enter your response here..."
-              {...registerSubmission('submissionText')}
-            />
-
-            <div className="flex gap-3">
-              <Button type="submit" variant="primary" disabled={submittingId}>
-                {submittingId ? 'Submitting...' : 'Submit'}
-              </Button>
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={() => {
-                  setShowSubmitModal(false);
-                  setSelectedAssignment(null);
-                  resetSubmission();
-                }}
-              >
-                Cancel
-              </Button>
-            </div>
-          </form>
-        </Modal>
-      )}
-
       {/* Add Comment Modal */}
       {showCommentModal && selectedAnnouncement && (
-        <Modal className="max-w-2xl">
+        <Modal isOpen={true} onClose={() => setShowCommentModal(false)} title={`Comment on: ${selectedAnnouncement.title}`} size="xl">
           <div className="mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
-              Comment on: {selectedAnnouncement.title}
-            </h2>
+            <p className="text-sm text-gray-600">Share your thoughts with the class.</p>
           </div>
 
-          <form onSubmit={handleSubmitComment(onAddComment)} className="space-y-6">
-            <Textarea
-              label="Your Comment"
-              placeholder="Share your thoughts..."
-              {...registerComment('content')}
-            />
+          <Textarea
+            label="Your Comment"
+            placeholder="Share your thoughts..."
+            value={commentContent}
+            onChange={(e) => setCommentContent(e.target.value)}
+          />
 
-            <div className="flex gap-3">
-              <Button type="submit" variant="primary">
-                Post Comment
-              </Button>
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={() => {
-                  setShowCommentModal(false);
-                  setSelectedAnnouncement(null);
-                  resetComment();
-                }}
-              >
-                Cancel
-              </Button>
-            </div>
-          </form>
+          <div className="flex gap-3 mt-6">
+            <Button type="button" variant="primary" onClick={onAddComment}>
+              Post Comment
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => {
+                setShowCommentModal(false);
+                setSelectedAnnouncement(null);
+                setCommentContent('');
+              }}
+            >
+              Cancel
+            </Button>
+          </div>
         </Modal>
       )}
     </div>

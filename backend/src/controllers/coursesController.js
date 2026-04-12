@@ -3,13 +3,53 @@ import { generateInviteCode } from '../utils/codes.js';
 
 export const createCourse = async (req, res) => {
   try {
-    const { title, section, subject, description, coverColor } = req.validatedData;
+    const {
+      title,
+      section,
+      subject,
+      description,
+      coverColor,
+      category,
+      difficulty,
+      duration,
+      maxStudents,
+      outcomes,
+      status,
+    } = req.validatedData;
+
+    const subjectToStore = subject || category || '';
 
     const result = await query(
-      `INSERT INTO courses (teacher_id, title, section, subject, description, cover_color)
-       VALUES ($1, $2, $3, $4, $5, $6)
+      `INSERT INTO courses (
+         teacher_id,
+         title,
+         section,
+         subject,
+         description,
+         category,
+         difficulty,
+         duration_hours,
+         max_students,
+         outcomes,
+         status,
+         cover_color
+       )
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
        RETURNING *`,
-      [req.user.id, title, section, subject, description, coverColor || '#4F46E5']
+      [
+        req.user.id,
+        title,
+        section || '',
+        subjectToStore,
+        description,
+        category || '',
+        difficulty || null,
+        duration ?? null,
+        maxStudents ?? null,
+        outcomes?.length ? JSON.stringify(outcomes) : null,
+        status || 'published',
+        coverColor || '#4F46E5',
+      ]
     );
 
     const course = result.rows[0];
@@ -25,6 +65,34 @@ export const createCourse = async (req, res) => {
   } catch (error) {
     console.error('Create course error:', error);
     res.status(500).json({ error: 'Failed to create course' });
+  }
+};
+
+export const createModule = async (req, res) => {
+  try {
+    const { courseId } = req.params;
+    const { title, description, orderIndex } = req.validatedData;
+
+    // Verify course ownership
+    const course = await query('SELECT teacher_id FROM courses WHERE id = $1', [courseId]);
+    if (course.rows.length === 0) {
+      return res.status(404).json({ error: 'Course not found' });
+    }
+    if (course.rows[0].teacher_id !== req.user.id) {
+      return res.status(403).json({ error: 'Unauthorized' });
+    }
+
+    const result = await query(
+      `INSERT INTO course_modules (course_id, title, description, order_index)
+       VALUES ($1, $2, $3, $4)
+       RETURNING *`,
+      [courseId, title, description || '', orderIndex ?? 0]
+    );
+
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    console.error('Create module error:', error);
+    res.status(500).json({ error: 'Failed to create module' });
   }
 };
 
@@ -85,6 +153,16 @@ export const listCourses = async (req, res) => {
          ORDER BY c.created_at DESC`,
         [req.user.id]
       );
+    } else if (req.user.role === 'admin') {
+      // Admins can see all courses
+      result = await query(
+        `SELECT id, title, section, subject, description, cover_color, created_at
+         FROM courses
+         ORDER BY created_at DESC`,
+        []
+      );
+    } else {
+      return res.status(403).json({ error: 'Insufficient permissions' });
     }
 
     res.json(result.rows);
@@ -162,7 +240,19 @@ export const getEnrollments = async (req, res) => {
 export const updateCourse = async (req, res) => {
   try {
     const { courseId } = req.params;
-    const { title, section, subject, description, coverColor } = req.validatedData;
+    const {
+      title,
+      section,
+      subject,
+      description,
+      coverColor,
+      category,
+      difficulty,
+      duration,
+      maxStudents,
+      outcomes,
+      status,
+    } = req.validatedData;
 
     // Verify course ownership
     const course = await query('SELECT teacher_id FROM courses WHERE id = $1', [courseId]);
@@ -172,10 +262,34 @@ export const updateCourse = async (req, res) => {
 
     const result = await query(
       `UPDATE courses 
-       SET title = $1, section = $2, subject = $3, description = $4, cover_color = $5, updated_at = CURRENT_TIMESTAMP
-       WHERE id = $6
+       SET title = $1,
+           section = $2,
+           subject = $3,
+           description = $4,
+           category = $5,
+           difficulty = $6,
+           duration_hours = $7,
+           max_students = $8,
+           outcomes = $9,
+           status = $10,
+           cover_color = $11,
+           updated_at = CURRENT_TIMESTAMP
+       WHERE id = $12
        RETURNING *`,
-      [title, section, subject, description, coverColor, courseId]
+      [
+        title,
+        section || '',
+        subject || category || '',
+        description,
+        category || '',
+        difficulty || null,
+        duration ?? null,
+        maxStudents ?? null,
+        outcomes?.length ? JSON.stringify(outcomes) : null,
+        status || 'published',
+        coverColor,
+        courseId,
+      ]
     );
 
     res.json(result.rows[0]);

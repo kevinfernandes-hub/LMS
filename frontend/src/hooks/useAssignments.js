@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { assignmentsAPI } from '../api/client.js';
+import { api, assignmentsAPI } from '../api/client.js';
 import { useToast } from './useToast.js';
 
 /**
@@ -69,23 +69,70 @@ export const useDeleteAssignment = (courseId) => {
 /**
  * Submit an assignment (for students)
  */
-export const useSubmitAssignment = (assignmentId) => {
+export const useSubmitAssignment = (assignmentId, courseId) => {
   const queryClient = useQueryClient();
   const toast = useToast();
 
   return useMutation({
-    mutationFn: async (submission) => {
-      const response = await assignmentsAPI.submit(assignmentId, submission);
+    mutationFn: async (formData) => {
+      const response = await api.post(
+        `/assignments/${assignmentId}/submit`,
+        formData,
+        { headers: { 'Content-Type': 'multipart/form-data' } }
+      );
       return response.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ['submissions', assignmentId],
+        queryKey: ['submission', assignmentId],
       });
-      toast.success('Assignment submitted!');
+      if (courseId) {
+        queryClient.invalidateQueries({ queryKey: ['assignments', courseId] });
+      }
+      toast.success('Assignment turned in ✓');
     },
     onError: (error) => {
-      const message = error.response?.data?.message || 'Failed to submit assignment';
+      const message = error.response?.data?.message || 'Submission failed';
+      toast.error(message);
+    },
+  });
+};
+
+/**
+ * Fetch the current student's submission for an assignment
+ */
+export const useMySubmission = (assignmentId) => {
+  return useQuery({
+    queryKey: ['submission', assignmentId],
+    queryFn: async () => {
+      const response = await api.get(`/assignments/${assignmentId}/my-submission`);
+      return response.data;
+    },
+    enabled: !!assignmentId,
+  });
+};
+
+/**
+ * Unsubmit (back to draft) before grading
+ */
+export const useUnsubmitAssignment = (assignmentId, courseId) => {
+  const queryClient = useQueryClient();
+  const toast = useToast();
+
+  return useMutation({
+    mutationFn: async () => {
+      const response = await api.post(`/assignments/${assignmentId}/unsubmit`);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['submission', assignmentId] });
+      if (courseId) {
+        queryClient.invalidateQueries({ queryKey: ['assignments', courseId] });
+      }
+      toast.success('Assignment unsubmitted');
+    },
+    onError: (error) => {
+      const message = error.response?.data?.message || 'Failed to unsubmit';
       toast.error(message);
     },
   });

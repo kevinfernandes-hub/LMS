@@ -14,6 +14,7 @@ const Modal = ({
   children,
   footer,
   size = 'md',
+  position = 'center',
   closeOnBackdropClick = true,
 }) => {
   useEffect(() => {
@@ -30,6 +31,11 @@ const Modal = ({
     md: 'max-w-md',
     lg: 'max-w-lg',
     xl: 'max-w-2xl',
+  };
+
+  const positions = {
+    center: 'left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2',
+    topLeft: 'left-6 top-6 translate-x-0 translate-y-0',
   };
 
   return (
@@ -50,7 +56,8 @@ const Modal = ({
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ duration: 0.3, type: 'spring', stiffness: 300, damping: 30 }}
             className={clsx(
-              'fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2',
+              'fixed',
+              positions[position] || positions.center,
               'bg-white dark:bg-gray-950 rounded-lg shadow-xl z-50',
               sizes[size],
               'w-full mx-4 max-h-[90vh] flex flex-col'

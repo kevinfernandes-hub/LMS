@@ -54,7 +54,7 @@ export default function TeacherGrading() {
 
     try {
       const submission = submissions.find(s => s.id === gradingId);
-      await assignmentsAPI.grade(submission.submission_id, data);
+      await assignmentsAPI.grade(submission.id, data);
       toast.success('Submission graded!');
       await fetchGradingData();
       setGradingId(null);
@@ -159,6 +159,30 @@ export default function TeacherGrading() {
                 <p className="text-gray-700 text-sm whitespace-pre-wrap">
                   {submission.submission_text || '(No text submitted)'}
                 </p>
+                {(submission.file_url || submission.drive_link || submission.link_url) && (
+                  <div className="mt-3 space-y-2">
+                    {submission.file_url && (
+                      <a
+                        href={submission.file_url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="block text-sm text-indigo-600 hover:underline"
+                      >
+                        Open submitted file
+                      </a>
+                    )}
+                    {(submission.drive_link || submission.link_url) && (
+                      <a
+                        href={submission.drive_link || submission.link_url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="block text-sm text-indigo-600 hover:underline"
+                      >
+                        Open submitted link
+                      </a>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Existing Feedback */}

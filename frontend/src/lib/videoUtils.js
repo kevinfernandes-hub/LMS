@@ -93,3 +93,33 @@ export const normalizeUrl = (url) => {
   if (!url) return '';
   return url.trim().split('&list=')[0]; // Remove playlist params
 };
+
+export function isYouTubeUrl(url) {
+  return /(?:youtube\.com\/watch|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)/.test(url || '');
+}
+
+export function isGoogleDriveUrl(url) {
+  return /drive\.google\.com\/(?:file\/d\/|open\?id=)/.test(url || '');
+}
+
+export function getYouTubeEmbedUrl(url) {
+  const patterns = [
+    /youtube\.com\/watch\?v=([a-zA-Z0-9_-]{11})/,
+    /youtu\.be\/([a-zA-Z0-9_-]{11})/,
+    /youtube\.com\/embed\/([a-zA-Z0-9_-]{11})/,
+    /youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})/,
+  ];
+
+  for (const pattern of patterns) {
+    const match = (url || '').match(pattern);
+    if (match) {
+      return {
+        videoId: match[1],
+        embedUrl: `https://www.youtube.com/embed/${match[1]}?autoplay=1&rel=0&modestbranding=1&color=white`,
+        thumbnailUrl: `https://img.youtube.com/vi/${match[1]}/maxresdefault.jpg`,
+      };
+    }
+  }
+
+  return null;
+}
