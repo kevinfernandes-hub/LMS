@@ -10,6 +10,8 @@
     "lint": "eslint src --ext js,jsx"
   },
   "dependencies": {
+    "@fontsource/inter": "^5.2.8",
+    "@fontsource/jetbrains-mono": "^5.2.8",
     "@hookform/resolvers": "^3.3.2",
     "@tanstack/react-query": "^5.25.0",
     "axios": "^1.6.2",

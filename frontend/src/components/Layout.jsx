@@ -67,7 +67,7 @@ export const Sidebar = () => {
     <aside className="w-64 bg-white border-r border-gray-200 h-screen flex flex-col fixed left-0 top-0">
       {/* Header */}
       <div className="p-6 border-b border-gray-200">
-        <h1 className="text-2xl font-bold text-indigo-600">Acadify</h1>
+        <h1 className="text-2xl font-bold text-indigo-600">SVPCET</h1>
       </div>
 
       {/* Menu */}

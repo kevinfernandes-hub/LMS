@@ -128,74 +128,22 @@ export const useInviteCode = (courseId) => {
   });
 };
 
-// Assignments hooks
-export const useAssignments = (courseId) => {
-  return useQuery({
-    queryKey: ['assignments', courseId],
-    queryFn: () => assignmentsAPI.list(courseId),
-    select: (data) => data.data,
-    enabled: !!courseId,
-  });
-};
+// Announcements hooks (imported from separate file)
+export {
+  useAnnouncements,
+  useCreateAnnouncement,
+  useDeleteAnnouncement,
+  useAddAnnouncementComment,
+} from './useAnnouncements.js';
 
-export const useAssignment = (id) => {
-  return useQuery({
-    queryKey: ['assignment', id],
-    queryFn: () => assignmentsAPI.get(id),
-    select: (data) => data.data,
-    enabled: !!id,
-  });
-};
-
-export const useSubmitAssignment = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: ({ id, data }) => assignmentsAPI.submit(id, data),
-    onSuccess: (data, { id }) => {
-      queryClient.invalidateQueries({ queryKey: ['submission', id] });
-    },
-  });
-};
-
-export const useStudentSubmission = (assignmentId) => {
-  return useQuery({
-    queryKey: ['submission', assignmentId],
-    queryFn: () => assignmentsAPI.getStudentSubmission(assignmentId),
-    select: (data) => data.data,
-    enabled: !!assignmentId,
-  });
-};
-
-export const useAssignmentSubmissions = (assignmentId) => {
-  return useQuery({
-    queryKey: ['submissions', assignmentId],
-    queryFn: () => assignmentsAPI.getSubmissions(assignmentId),
-    select: (data) => data.data,
-    enabled: !!assignmentId,
-  });
-};
-
-// Announcements hooks
-export const useAnnouncements = (courseId) => {
-  return useQuery({
-    queryKey: ['announcements', courseId],
-    queryFn: () => announcementsAPI.list(courseId),
-    select: (data) => data.data,
-    enabled: !!courseId,
-  });
-};
-
-export const useCreateAnnouncement = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: ({ courseId, data }) => announcementsAPI.create(courseId, data),
-    onSuccess: (data, { courseId }) => {
-      queryClient.invalidateQueries({ queryKey: ['announcements', courseId] });
-    },
-  });
-};
+// Assignments hooks (imported from separate file)
+export {
+  useAssignments,
+  useCreateAssignment,
+  useDeleteAssignment,
+  useSubmitAssignment,
+  useUpdateAssignment,
+} from './useAssignments.js';
 
 // Materials hooks
 export const useMaterials = (courseId) => {
@@ -246,3 +194,17 @@ export const useMarkAsRead = () => {
     },
   });
 };
+
+// Lectures hooks (imported from separate file)
+export {
+  useLectures,
+  useLecture,
+  useCreateLecture,
+  useUpdateLecture,
+  useDeleteLecture,
+  useMarkWatched,
+  useLectureStats,
+} from './useLectures.js';
+
+// Toast hook
+export { useToast } from './useToast.js';

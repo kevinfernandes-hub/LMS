@@ -1,6 +1,17 @@
 import clsx from 'clsx';
 
-const COLORS = ['bg-indigo-500', 'bg-emerald-500', 'bg-rose-500', 'bg-amber-500', 'bg-sky-500', 'bg-violet-500', 'bg-teal-500', 'bg-orange-500'];
+/**
+ * Course color palette for avatar backgrounds
+ * Using muted, premium SaaS-style colors
+ */
+const COURSE_COLORS = [
+  'bg-course-1',  // Indigo
+  'bg-course-2',  // Cyan
+  'bg-course-3',  // Pink
+  'bg-course-4',  // Amber
+  'bg-course-5',  // Teal
+  'bg-course-6',  // Violet
+];
 
 function getInitials(name) {
   return name
@@ -13,10 +24,14 @@ function getInitials(name) {
 
 function getColorForName(name) {
   const hash = name.charCodeAt(0);
-  return COLORS[hash % COLORS.length];
+  return COURSE_COLORS[hash % COURSE_COLORS.length];
 }
 
-export const Avatar = ({
+/**
+ * Avatar component - displays user initials or image
+ * Premium SaaS design with course color palette
+ */
+const Avatar = ({
   src,
   alt = '',
   name = 'User',
@@ -43,7 +58,7 @@ export const Avatar = ({
   return (
     <div
       className={clsx(
-        'rounded-full flex items-center justify-center font-semibold text-white',
+        'rounded-full flex items-center justify-center font-medium text-white',
         sizes[size],
         getColorForName(name),
         className
@@ -53,3 +68,8 @@ export const Avatar = ({
     </div>
   );
 };
+
+Avatar.displayName = 'Avatar';
+
+export default Avatar;
+export { Avatar };

@@ -38,7 +38,7 @@ export default function AdminLogin() {
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-50 flex items-center justify-center p-4">
       <Card className="w-full max-w-md shadow-xl">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-indigo-600 mb-2">Acadify</h1>
+          <h1 className="text-3xl font-bold text-indigo-600 mb-2">SVPCET</h1>
           <h2 className="text-2xl font-semibold text-gray-900">Admin Login</h2>
           <p className="text-gray-600 mt-2">Sign in to manage the system</p>
         </div>

@@ -11,8 +11,8 @@ export default function Landing() {
       <nav className="border-b border-white/10 backdrop-blur">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <span className="text-3xl">📚</span>
-            <h1 className="text-2xl font-bold text-white">Acadify</h1>
+            <img src="/logo.jpeg" alt="SVPCET Logo" className="w-10 h-10 rounded-lg" />
+            <h1 className="text-2xl font-bold text-white">SVPCET</h1>
           </div>
           <Button onClick={() => navigate('/student/login')} variant="secondary">
             Sign in
@@ -77,7 +77,7 @@ export default function Landing() {
       {/* Footer */}
       <div className="border-t border-white/10 mt-20">
         <div className="max-w-7xl mx-auto px-6 py-8 text-center text-indigo-100">
-          <p>© 2024 Acadify. All rights reserved.</p>
+          <p>© 2024 SVPCET. All rights reserved.</p>
         </div>
       </div>
     </div>

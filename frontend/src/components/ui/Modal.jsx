@@ -1,14 +1,20 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import { useEffect } from 'react';
+import clsx from 'clsx';
 
-export const Modal = ({
+/**
+ * Modal component with animated overlay and content
+ * Premium SaaS design with blur backdrop
+ */
+const Modal = ({
   isOpen,
   onClose,
   title,
   children,
   footer,
   size = 'md',
+  closeOnBackdropClick = true,
 }) => {
   useEffect(() => {
     if (isOpen) {
@@ -23,7 +29,7 @@ export const Modal = ({
     sm: 'max-w-sm',
     md: 'max-w-md',
     lg: 'max-w-lg',
-    xl: 'max-w-xl',
+    xl: 'max-w-2xl',
   };
 
   return (
@@ -34,29 +40,46 @@ export const Modal = ({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={onClose}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
+            transition={{ duration: 0.2 }}
+            onClick={closeOnBackdropClick ? onClose : undefined}
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
           />
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            className={`fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-2xl shadow-2xl z-50 ${sizes[size]} w-full mx-4`}
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            transition={{ duration: 0.3, type: 'spring', stiffness: 300, damping: 30 }}
+            className={clsx(
+              'fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2',
+              'bg-white dark:bg-gray-950 rounded-lg shadow-xl z-50',
+              sizes[size],
+              'w-full mx-4 max-h-[90vh] flex flex-col'
+            )}
+            onClick={(e) => e.stopPropagation()}
           >
-            <div className="p-6 border-b border-gray-100 flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-gray-900">{title}</h2>
+            {/* Header */}
+            <div className="px-6 py-5 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between flex-shrink-0">
+              {title && (
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 font-cabinet-grotesk">
+                  {title}
+                </h2>
+              )}
               <button
                 onClick={onClose}
-                className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-900 rounded-md transition-colors text-gray-500 dark:text-gray-400"
               >
-                <X className="w-5 h-5 text-gray-500" />
+                <X size={20} strokeWidth={2} />
               </button>
             </div>
-            <div className="p-6 max-h-[calc(100vh-200px)] overflow-y-auto">
+
+            {/* Content */}
+            <div className="px-6 py-5 overflow-y-auto flex-1">
               {children}
             </div>
+
+            {/* Footer */}
             {footer && (
-              <div className="p-6 border-t border-gray-100 flex gap-3 justify-end">
+              <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-800 flex gap-3 justify-end flex-shrink-0">
                 {footer}
               </div>
             )}
@@ -66,3 +89,8 @@ export const Modal = ({
     </AnimatePresence>
   );
 };
+
+Modal.displayName = 'Modal';
+
+export default Modal;
+export { Modal };

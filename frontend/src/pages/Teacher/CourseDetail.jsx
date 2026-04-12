@@ -1,62 +1,37 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { toast } from 'sonner';
-import { Card, Button, Input, Textarea, Modal, Loading } from '../../components/ui.jsx';
+import { Card, Button, Modal, Loading } from '../../components/ui.jsx';
 import {
   ArrowLeft, Plus, Copy, Users, FileText, MessageSquare, BarChart3,
-  Edit, Trash2, Eye
+  Eye, Trash2
 } from 'lucide-react';
-import { coursesAPI, assignmentsAPI, announcementsAPI, materialsAPI } from '../../api/client.js';
+import { coursesAPI, materialsAPI } from '../../api/client.js';
+import PostComposer from '../../components/stream/PostComposer.jsx';
+import CreateAssignmentModal from '../../components/assignment/CreateAssignmentModal.jsx';
+import CreateMaterialModal from '../../components/material/CreateMaterialModal.jsx';
+import { useAnnouncements, useDeleteAnnouncement } from '../../hooks/useAnnouncements.js';
+import { useAssignments, useDeleteAssignment } from '../../hooks/useAssignments.js';
 
-const createAssignmentSchema = z.object({
-  title: z.string().min(1, 'Title is required'),
-  instructions: z.string().optional().default(''),
-  dueDate: z.string().optional(),
-  points: z.coerce.number().optional().default(100),
-  file: z.any().optional(),
-});
-
-const createAnnouncementSchema = z.object({
-  title: z.string().min(1, 'Title is required'),
-  content: z.string().min(1, 'Content is required'),
-});
 
 export default function TeacherCourseDetail() {
   const { courseId } = useParams();
   const navigate = useNavigate();
   const [course, setCourse] = useState(null);
-  const [assignments, setAssignments] = useState([]);
-  const [announcements, setAnnouncements] = useState([]);
-  const [materials, setMaterials] = useState([]);
+  const [material, setMaterials] = useState([]);
   const [enrollments, setEnrollments] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('assignments');
   const [showCreateAssignmentModal, setShowCreateAssignmentModal] = useState(false);
-  const [showCreateAnnouncementModal, setShowCreateAnnouncementModal] = useState(false);
+  const [showCreateMaterialModal, setShowCreateMaterialModal] = useState(false);
   const [showInviteCodeModal, setShowInviteCodeModal] = useState(false);
   const [inviteCode, setInviteCode] = useState('');
-  const [creatingId, setCreatingId] = useState(null);
 
-  const {
-    register: regAssignment,
-    handleSubmit: handleCreateAssignment,
-    reset: resetAssignment,
-    formState: { errors: assignmentErrors },
-  } = useForm({
-    resolver: zodResolver(createAssignmentSchema),
-  });
-
-  const {
-    register: regAnnouncement,
-    handleSubmit: handleCreateAnnouncement,
-    reset: resetAnnouncement,
-    formState: { errors: announcementErrors },
-  } = useForm({
-    resolver: zodResolver(createAnnouncementSchema),
-  });
+  // React Query hooks
+  const { data: assignments = [] } = useAssignments(courseId);
+  const { data: announcements = [] } = useAnnouncements(courseId);
+  const { mutate: deleteAssignment } = useDeleteAssignment(courseId);
+  const { mutate: deleteAnnouncement } = useDeleteAnnouncement(courseId);
 
   useEffect(() => {
     fetchCourseData();
@@ -65,18 +40,14 @@ export default function TeacherCourseDetail() {
   const fetchCourseData = async () => {
     setIsLoading(true);
     try {
-      const [courseRes, assignmentsRes, announcementsRes, materialsRes, enrollmentsRes, inviteRes] = await Promise.all([
+      const [courseRes, materialsRes, enrollmentsRes, inviteRes] = await Promise.all([
         coursesAPI.get(courseId),
-        assignmentsAPI.list(courseId),
-        announcementsAPI.list(courseId),
         materialsAPI.list(courseId),
         coursesAPI.getEnrollments(courseId),
         coursesAPI.getInviteCode(courseId),
       ]);
 
       setCourse(courseRes.data);
-      setAssignments(assignmentsRes.data);
-      setAnnouncements(announcementsRes.data);
       setMaterials(materialsRes.data);
       setEnrollments(enrollmentsRes.data);
       setInviteCode(inviteRes.data.code);
@@ -88,53 +59,14 @@ export default function TeacherCourseDetail() {
     }
   };
 
-  const onCreateAssignment = async (data) => {
-    setCreatingId('assignment');
-    try {
-      await assignmentsAPI.create(courseId, data);
-      toast.success('Assignment created!');
-      await fetchCourseData();
-      setShowCreateAssignmentModal(false);
-      resetAssignment();
-    } catch (error) {
-      const message =
-        error?.response?.data?.details?.[0]?.message ||
-        error?.response?.data?.error ||
-        'Failed to create assignment';
-      toast.error(message);
-    } finally {
-      setCreatingId(null);
-    }
-  };
-
-  const onCreateAnnouncement = async (data) => {
-    setCreatingId('announcement');
-    try {
-      await announcementsAPI.create(courseId, data);
-      toast.success('Announcement posted!');
-      await fetchCourseData();
-      setShowCreateAnnouncementModal(false);
-      resetAnnouncement();
-    } catch (error) {
-      const message =
-        error?.response?.data?.details?.[0]?.message ||
-        error?.response?.data?.error ||
-        'Failed to create announcement';
-      toast.error(message);
-    } finally {
-      setCreatingId(null);
-    }
-  };
-
   const handleDeleteAssignment = async (assignmentId) => {
     if (!confirm('Delete this assignment? Students who submitted will keep their submissions.')) return;
-    try {
-      await assignmentsAPI.delete(assignmentId);
-      toast.success('Assignment deleted');
-      await fetchCourseData();
-    } catch (error) {
-      toast.error('Failed to delete assignment');
-    }
+    deleteAssignment(assignmentId);
+  };
+
+  const handleDeleteAnnouncement = async (announcementId) => {
+    if (!confirm('Delete this announcement?')) return;
+    deleteAnnouncement(announcementId);
   };
 
   const copyInviteCode = () => {
@@ -190,6 +122,7 @@ export default function TeacherCourseDetail() {
           {[
             { tab: 'assignments', label: 'Assignments' },
             { tab: 'announcements', label: 'Announcements' },
+            { tab: 'materials', label: 'Materials' },
             { tab: 'students', label: 'Students' },
             { tab: 'insights', label: 'Insights' },
           ].map((item) => (
@@ -276,19 +209,20 @@ export default function TeacherCourseDetail() {
               </Card>
             ))
           )}
+
+          {/* Create Assignment Modal */}
+          <CreateAssignmentModal
+            isOpen={showCreateAssignmentModal}
+            onClose={() => setShowCreateAssignmentModal(false)}
+            courseId={courseId}
+          />
         </div>
       )}
 
       {/* Announcements Tab */}
       {activeTab === 'announcements' && (
         <div className="space-y-6">
-          <Button
-            variant="primary"
-            onClick={() => setShowCreateAnnouncementModal(true)}
-            className="flex items-center gap-2"
-          >
-            <Plus className="w-5 h-5" /> New Announcement
-          </Button>
+          <PostComposer courseId={courseId} />
 
           {announcements.length === 0 ? (
             <Card className="text-center py-12">
@@ -298,12 +232,97 @@ export default function TeacherCourseDetail() {
           ) : (
             announcements.map((announcement) => (
               <Card key={announcement.id} className="p-6">
-                <h3 className="text-lg font-bold text-gray-900 mb-2">
-                  {announcement.title}
-                </h3>
+                <div className="flex justify-between items-start mb-2">
+                  <h3 className="text-lg font-bold text-gray-900">
+                    {announcement.title}
+                  </h3>
+                  <button
+                    onClick={() => handleDeleteAnnouncement(announcement.id)}
+                    className="text-gray-400 hover:text-red-600 transition-colors"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
                 <p className="text-gray-700 mb-3">{announcement.content}</p>
                 <p className="text-xs text-gray-500">
                   Posted {new Date(announcement.created_at).toLocaleDateString()}
+                </p>
+              </Card>
+            ))
+          )}
+        </div>
+      )}
+
+      {/* Materials Tab */}
+      {activeTab === 'materials' && (
+        <div className="space-y-6">
+          <Button
+            variant="primary"
+            onClick={() => setShowCreateMaterialModal(true)}
+            className="flex items-center gap-2"
+          >
+            <Plus className="w-5 h-5" /> Add Material
+          </Button>
+
+          {material.length === 0 ? (
+            <Card className="text-center py-12">
+              <FileText className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+              <p className="text-gray-600 mb-4">No materials yet</p>
+              <p className="text-sm text-gray-500 mb-4">Share YouTube links, Google Drive files, PDFs, and more</p>
+              <Button
+                variant="primary"
+                onClick={() => setShowCreateMaterialModal(true)}
+              >
+                Add First Material
+              </Button>
+            </Card>
+          ) : (
+            material.map((mat) => (
+              <Card key={mat.id} className="p-6">
+                <div className="flex justify-between items-start mb-3">
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-900">
+                      {mat.title}
+                    </h3>
+                    {mat.description && (
+                      <p className="text-sm text-gray-600 mt-1">
+                        {mat.description}
+                      </p>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => {
+                      if (confirm('Delete this material?')) {
+                        // TODO: Implement delete
+                      }
+                    }}
+                    className="text-gray-400 hover:text-red-600 transition-colors"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+                {mat.link_url && (
+                  <a
+                    href={mat.link_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-accent-600 text-sm font-medium hover:underline"
+                  >
+                    Open Link →
+                  </a>
+                )}
+                {mat.file_url && (
+                  <a
+                    href={mat.file_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-accent-600 text-sm font-medium hover:underline"
+                  >
+                    Download File →
+                  </a>
+                )}
+                <p className="text-xs text-gray-500 mt-3">
+                  Posted {new Date(mat.created_at).toLocaleDateString()}
                 </p>
               </Card>
             ))
@@ -391,104 +410,13 @@ export default function TeacherCourseDetail() {
         </Card>
       )}
 
-      {/* Create Assignment Modal */}
-      {showCreateAssignmentModal && (
-        <Modal className="max-w-2xl">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">New Assignment</h2>
-          <form
-            onSubmit={handleCreateAssignment(onCreateAssignment)}
-            className="space-y-6"
-          >
-            <Input
-              label="Title"
-              placeholder="Assignment title..."
-              {...regAssignment('title')}
-              error={assignmentErrors.title?.message}
-            />
-            <Textarea
-              label="Instructions"
-              placeholder="Describe the assignment..."
-              {...regAssignment('instructions')}
-              error={assignmentErrors.instructions?.message}
-            />
-            <Input
-              label="Attachment (optional)"
-              type="file"
-              {...regAssignment('file')}
-              error={assignmentErrors.file?.message}
-            />
-            <div className="grid grid-cols-2 gap-4">
-              <Input
-                label="Due Date"
-                type="datetime-local"
-                {...regAssignment('dueDate')}
-                error={assignmentErrors.dueDate?.message}
-              />
-              <Input
-                label="Points"
-                type="number"
-                defaultValue="100"
-                {...regAssignment('points')}
-                error={assignmentErrors.points?.message}
-              />
-            </div>
-            <div className="flex gap-3">
-              <Button type="submit" variant="primary" disabled={creatingId}>
-                {creatingId ? 'Creating...' : 'Create Assignment'}
-              </Button>
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={() => {
-                  setShowCreateAssignmentModal(false);
-                  resetAssignment();
-                }}
-              >
-                Cancel
-              </Button>
-            </div>
-          </form>
-        </Modal>
-      )}
-
-      {/* Create Announcement Modal */}
-      {showCreateAnnouncementModal && (
-        <Modal className="max-w-2xl">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">New Announcement</h2>
-          <form
-            onSubmit={handleCreateAnnouncement(onCreateAnnouncement)}
-            className="space-y-6"
-          >
-            <Input
-              label="Title"
-              placeholder="Announcement title..."
-              {...regAnnouncement('title')}
-              error={announcementErrors.title?.message}
-            />
-            <Textarea
-              label="Content"
-              placeholder="What do you want to announce?"
-              {...regAnnouncement('content')}
-              error={announcementErrors.content?.message}
-            />
-            <div className="flex gap-3">
-              <Button type="submit" variant="primary" disabled={creatingId}>
-                {creatingId ? 'Posting...' : 'Post Announcement'}
-              </Button>
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={() => {
-                  setShowCreateAnnouncementModal(false);
-                  resetAnnouncement();
-                }}
-              >
-                Cancel
-              </Button>
-            </div>
-          </form>
-        </Modal>
-      )}
+      {/* Create Material Modal */}
+      <CreateMaterialModal
+        isOpen={showCreateMaterialModal}
+        onClose={() => setShowCreateMaterialModal(false)}
+        courseId={courseId}
+        onSuccess={() => fetchCourseData()}
+      />
 
       {/* Invite Code Modal */}
       {showInviteCodeModal && (
