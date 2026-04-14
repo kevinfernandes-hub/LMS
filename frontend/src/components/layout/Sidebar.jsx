@@ -41,7 +41,7 @@ const Sidebar = ({ isMobile = false, isOpen, onClose }) => {
   const content = (
     <>
       {/* Logo & Branding */}
-      <div className="p-6 border-b border-white/10">
+      <div className="p-6 border-b border-gray-700">
         <div className="flex items-center gap-3">
           <motion.div
             whileHover={{ scale: 1.05 }}
@@ -51,13 +51,13 @@ const Sidebar = ({ isMobile = false, isOpen, onClose }) => {
           </motion.div>
           <div>
             <h1 className="text-lg font-semibold text-white font-cabinet-grotesk">SVPCET</h1>
-            <p className="text-xs text-white/60">Rise & Shine</p>
+            <p className="text-xs text-gray-300">Rise & Shine</p>
           </div>
         </div>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-3 py-6 space-y-1.5 overflow-y-auto scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
+      <nav className="flex-1 px-3 py-6 space-y-1.5 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-transparent">
         {filteredItems.map((item, idx) => {
           const Icon = item.icon;
           const isActive = location.pathname.startsWith(item.href);
@@ -74,14 +74,14 @@ const Sidebar = ({ isMobile = false, isOpen, onClose }) => {
                 onClick={isMobile ? onClose : undefined}
                 className={`flex items-center gap-3 px-4 py-2.5 rounded-md transition-all duration-250 group relative ${
                   isActive
-                    ? 'bg-white/20 text-white shadow-lg'
-                    : 'text-white/70 hover:text-white hover:bg-white/10'
+                    ? 'bg-[#7C5CFC] text-white shadow-lg'
+                    : 'text-white hover:text-white hover:bg-gray-700'
                 }`}
               >
                 {isActive && (
                   <motion.div
                     layoutId="activeIndicator"
-                    className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-white rounded-r-lg"
+                    className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#7C5CFC] rounded-r-lg"
                     transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                   />
                 )}
@@ -94,23 +94,23 @@ const Sidebar = ({ isMobile = false, isOpen, onClose }) => {
       </nav>
 
       {/* User Card */}
-      <div className="p-4 border-t border-white/10">
+      <div className="p-4 border-t border-gray-700">
         <motion.div
-          whileHover={{ backgroundColor: 'rgba(255,255,255,0.15)' }}
-          className="rounded-lg bg-white/10 backdrop-blur-sm p-3 cursor-pointer transition-colors"
+          whileHover={{ backgroundColor: 'rgba(124, 92, 252, 0.15)' }}
+          className="rounded-lg bg-[#7C5CFC]/10 backdrop-blur-sm p-3 cursor-pointer transition-colors"
         >
           <div className="flex items-center gap-3 mb-3">
             <Avatar name={user?.name} size="sm" />
             <div className="min-w-0">
               <p className="font-medium text-white text-sm truncate font-inter">{user?.name}</p>
-              <p className="text-xs text-white/60 capitalize">{user?.role}</p>
+              <p className="text-xs text-gray-300 capitalize">{user?.role}</p>
             </div>
           </div>
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={logout}
-            className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-md bg-red-500/20 hover:bg-red-500/30 text-red-100 transition-colors text-sm font-medium"
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-md bg-red-900/40 hover:bg-red-900/60 text-red-200 transition-colors text-sm font-medium"
           >
             <LogOut className="w-4 h-4" />
             Sign out
@@ -141,7 +141,7 @@ const Sidebar = ({ isMobile = false, isOpen, onClose }) => {
           initial={{ x: -280 }}
           animate={{ x: isOpen ? 0 : -280 }}
           transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-          className="fixed left-0 top-0 bottom-0 w-72 bg-gradient-to-b from-accent-600 to-accent-700 z-50 flex flex-col shadow-2xl"
+          className="fixed left-0 top-0 bottom-0 w-72 bg-gradient-to-b from-[#18162A] to-[#1F1D30] z-50 flex flex-col shadow-2xl"
         >
           {content}
         </motion.div>
@@ -150,7 +150,7 @@ const Sidebar = ({ isMobile = false, isOpen, onClose }) => {
   }
 
   return (
-    <div className="fixed left-0 top-0 bottom-0 w-60 bg-gradient-to-b from-accent-600 to-accent-700 flex flex-col hidden md:flex shadow-xl">
+    <div className="fixed left-0 top-0 bottom-0 w-60 bg-gradient-to-b from-[#18162A] to-[#1F1D30] flex flex-col hidden md:flex shadow-xl">
       {content}
     </div>
   );

@@ -29,7 +29,7 @@ const Textarea = React.forwardRef(
     return (
       <div className={clsx('w-full flex flex-col gap-2.5', containerClassName)}>
         {label && (
-          <label htmlFor={textareaId} className="text-sm font-medium text-gray-900 dark:text-gray-100">
+          <label htmlFor={textareaId} className="text-sm font-medium text-white light:text-gray-900">
             {label}
           </label>
         )}
@@ -40,25 +40,25 @@ const Textarea = React.forwardRef(
           maxLength={maxLength}
           onChange={handleChange}
           className={clsx(
-            'w-full px-4 py-2.5 rounded-md border border-gray-200',
-            'bg-white text-gray-900 placeholder-gray-400',
+            'w-full px-4 py-2.5 rounded-md border border-gray-700',
+            'bg-[#0f0f23] text-white placeholder-gray-400',
             'transition-all duration-250 resize-none',
             'focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-accent-500',
-            'disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed',
+            'disabled:bg-gray-800 disabled:text-gray-400 disabled:cursor-not-allowed',
             error && 'border-red-500 focus:ring-red-500 focus:border-red-500',
-            'dark:bg-gray-900 dark:text-gray-100 dark:border-gray-700',
-            'dark:placeholder-gray-500 dark:focus:ring-accent-600',
-            'dark:disabled:bg-gray-800 dark:disabled:text-gray-400',
+            'light:bg-white light:text-gray-900 light:border-gray-200',
+            'light:placeholder-gray-400 light:focus:ring-accent-600',
+            'light:disabled:bg-gray-50 light:disabled:text-gray-500',
             props.className
           )}
           {...props}
         />
         <div className="flex items-center justify-between">
           {error && (
-            <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+            <p className="text-sm text-red-400 light:text-red-600">{error}</p>
           )}
           {showCharCount && maxLength && (
-            <p className="text-xs text-gray-500 dark:text-gray-400 ml-auto">
+            <p className="text-xs text-gray-400 light:text-gray-500 ml-auto">
               {charCount} / {maxLength}
             </p>
           )}

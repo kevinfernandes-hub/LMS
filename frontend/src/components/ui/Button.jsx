@@ -43,31 +43,31 @@ const Button = React.forwardRef(
       lg: 'px-6 py-3 text-lg gap-3',
     };
 
-    // Variant styles using new design tokens
+    // Variant styles using new design tokens (Dark mode by default)
     const variantStyles = {
       primary: `
-        bg-gradient-to-r from-accent-600 to-accent-700 text-white
-        hover:from-accent-700 hover:to-accent-800
-        active:from-accent-800 active:to-accent-900
+        bg-gradient-to-r from-accent-500 to-accent-600 text-white
+        hover:from-accent-600 hover:to-accent-700
+        active:from-accent-700 active:to-accent-800
         shadow-sm hover:shadow-md
-        disabled:from-gray-300 disabled:to-gray-400
+        disabled:from-gray-600 disabled:to-gray-700
       `,
       secondary: `
-        bg-gray-100 text-gray-900
-        hover:bg-gray-200
-        active:bg-gray-300
+        bg-gray-800 text-gray-100
+        hover:bg-gray-700
+        active:bg-gray-600
         shadow-xs
-        dark:bg-gray-800 dark:text-gray-100
-        dark:hover:bg-gray-700
-        dark:active:bg-gray-600
+        light:bg-gray-100 light:text-gray-900
+        light:hover:bg-gray-200
+        light:active:bg-gray-300
       `,
       ghost: `
-        text-gray-700 bg-transparent
-        hover:bg-gray-100
-        active:bg-gray-200
-        dark:text-gray-300
-        dark:hover:bg-gray-900
-        dark:active:bg-gray-800
+        text-gray-300 bg-transparent
+        hover:bg-gray-900
+        active:bg-gray-800
+        light:text-gray-700
+        light:hover:bg-gray-100
+        light:active:bg-gray-200
       `,
       danger: `
         bg-red-600 text-white

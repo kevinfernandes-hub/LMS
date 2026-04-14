@@ -1,41 +1,52 @@
-import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Sparkles, Users, ClipboardList } from 'lucide-react';
+﻿import { useNavigate } from 'react-router-dom';
+import { ArrowRight } from 'lucide-react';
 import { Button } from '../../components/ui/index.jsx';
 
 export default function Landing() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-600 via-purple-600 to-indigo-700">
+    <div className="min-h-screen bg-[#0f0f23] text-white flex flex-col">
       {/* Navigation */}
-      <nav className="border-b border-white/10 backdrop-blur">
+      <nav className="border-b border-white/10">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <img src="/logo.jpeg" alt="SVPCET Logo" className="w-10 h-10 rounded-lg" />
-            <h1 className="text-2xl font-bold text-white">SVPCET</h1>
-          </div>
-          <Button onClick={() => navigate('/student/login')} variant="secondary">
+          <h1 className="text-2xl font-bold text-white">SVPCET</h1>
+          <Button onClick={() => navigate('/student/login')} variant="primary">
             Sign in
           </Button>
         </div>
       </nav>
 
-      {/* Hero */}
-      <div className="max-w-7xl mx-auto px-6 py-20">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-          <div>
-            <h2 className="text-5xl md:text-6xl font-bold text-white mb-6 leading-tight">
-              Your classroom, reimagined.
-            </h2>
-            <p className="text-xl text-indigo-100 mb-8">
-              A modern learning management system designed for students, teachers, and administrators. Connect, learn, and grow together.
-            </p>
-            <div className="flex gap-4 flex-wrap">
+      {/* Hero - Centered */}
+      <div className="flex-1 flex items-center justify-center px-6 py-20">
+        <div className="max-w-2xl w-full text-center space-y-8">
+          {/* College Logo */}
+          <div className="flex justify-center">
+            <img 
+              src="/logo.jpeg" 
+              alt="SVPCET Logo" 
+              className="w-32 h-32 rounded-lg shadow-lg" 
+            />
+          </div>
+
+          {/* Main Content */}
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-6xl md:text-7xl font-bold text-white mb-4 leading-tight">
+                Your classroom,<br />reimagined.
+              </h2>
+              <p className="text-lg text-gray-300 max-w-xl mx-auto">
+                A modern learning management system designed for students, teachers, and administrators. Connect, learn, and grow together.
+              </p>
+            </div>
+
+            {/* Auth Buttons - Horizontal Row */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center pt-8">
               <Button
                 onClick={() => navigate('/student/login')}
                 variant="primary"
                 size="lg"
-                className="bg-white text-indigo-600 hover:bg-gray-100"
+                className="bg-[#7C5CFC] hover:bg-[#6644F4] text-white"
               >
                 Join as Student
                 <ArrowRight className="w-5 h-5 ml-2" />
@@ -44,39 +55,26 @@ export default function Landing() {
                 onClick={() => navigate('/teacher/login')}
                 variant="ghost"
                 size="lg"
-                className="border-2 border-white text-white hover:bg-white/10"
+                className="border-2 border-[#7C5CFC] text-[#7C5CFC] hover:bg-[#7C5CFC]/10"
               >
                 Join as Teacher
               </Button>
-            </div>
-          </div>
-
-          {/* Features */}
-          <div className="space-y-6">
-            <div className="bg-white/10 backdrop-blur border border-white/20 p-6 rounded-xl hover:bg-white/15 transition-colors">
-              <Sparkles className="w-8 h-8 text-yellow-300 mb-3" />
-              <h3 className="text-xl font-semibold text-white mb-2">Beautiful Interface</h3>
-              <p className="text-indigo-100">Inspired by Google Classroom but more polished and intuitive</p>
-            </div>
-
-            <div className="bg-white/10 backdrop-blur border border-white/20 p-6 rounded-xl hover:bg-white/15 transition-colors">
-              <ClipboardList className="w-8 h-8 text-blue-300 mb-3" />
-              <h3 className="text-xl font-semibold text-white mb-2">Powerful Tools</h3>
-              <p className="text-indigo-100">Assignments, announcements, materials, and more in one place</p>
-            </div>
-
-            <div className="bg-white/10 backdrop-blur border border-white/20 p-6 rounded-xl hover:bg-white/15 transition-colors">
-              <Users className="w-8 h-8 text-green-300 mb-3" />
-              <h3 className="text-xl font-semibold text-white mb-2">Role-Based Access</h3>
-              <p className="text-indigo-100">Tailored dashboards for students, teachers, and administrators</p>
+              <Button
+                onClick={() => navigate('/admin/login')}
+                variant="ghost"
+                size="lg"
+                className="border-2 border-[#7C5CFC] text-[#7C5CFC] hover:bg-[#7C5CFC]/10"
+              >
+                Join as Admin
+              </Button>
             </div>
           </div>
         </div>
       </div>
 
       {/* Footer */}
-      <div className="border-t border-white/10 mt-20">
-        <div className="max-w-7xl mx-auto px-6 py-8 text-center text-indigo-100">
+      <div className="border-t border-white/10 mt-auto">
+        <div className="max-w-7xl mx-auto w-full px-6 py-8 text-center text-gray-400">
           <p>© 2024 SVPCET. All rights reserved.</p>
         </div>
       </div>

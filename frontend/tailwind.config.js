@@ -8,70 +8,70 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Base palette
+        // Base palette - Dark mode (default) with maximum visibility
         bg: {
-          page: '#F6F5FF',
-          surface: '#FFFFFF',
-          elevated: '#F8F7FF',
+          page: '#0f0f23',
+          surface: 'rgba(24, 22, 42, 0.3)',
+          elevated: 'rgba(31, 29, 48, 0.4)',
         },
         border: {
-          DEFAULT: '#E8E6F0',
-          strong: '#D0CCE8',
+          DEFAULT: '#444444',
+          strong: '#555555',
         },
         text: {
-          900: '#1A1523',
-          600: '#6E6A7C',
+          900: '#FFFFFF',
+          600: '#E8E6F0',
           400: '#A89FBC',
         },
-        // Accent - Violet
+        // Accent - Violet (Keep as is)
         accent: {
-          50: '#F3F0FF',
-          100: '#E5DEFF',
-          200: '#C9BBFF',
+          50: '#2D1F6E',
+          100: '#44318D',
+          200: '#5A47AD',
           500: '#7C5CFC',
           600: '#6644F4',
-          900: '#2D1F6E',
+          900: '#F3F0FF',
         },
         // Semantic colors
         success: {
           DEFAULT: '#10B981',
-          light: '#F0FDF4',
-          border: '#A7F3D0',
+          light: '#064E3B',
+          border: '#059669',
         },
         warning: {
           DEFAULT: '#F59E0B',
-          light: '#FFFBEB',
-          border: '#FDE68A',
+          light: '#78350F',
+          border: '#D97706',
         },
         danger: {
           DEFAULT: '#EF4444',
-          light: '#FFF1F2',
-          border: '#FECDD3',
+          light: '#7F1D1D',
+          border: '#DC2626',
         },
         info: {
           DEFAULT: '#6366F1',
-          light: '#EEF2FF',
-          border: '#C7D2FE',
+          light: '#312E81',
+          border: '#4F46E5',
         },
-        // Course colors (muted)
+        // Course colors (adjusted for dark theme)
         course: {
-          violet: { bg: '#EDE9FE', border: '#7C3AED' },
-          blue: { bg: '#EFF6FF', border: '#3B82F6' },
-          emerald: { bg: '#ECFDF5', border: '#10B981' },
-          amber: { bg: '#FFFBEB', border: '#F59E0B' },
-          rose: { bg: '#FFF1F2', border: '#F43F5E' },
-          slate: { bg: '#F8FAFC', border: '#64748B' },
+          violet: { bg: '#2D1F6E', border: '#7C5CFC' },
+          blue: { bg: '#1e3a8a', border: '#3B82F6' },
+          emerald: { bg: '#064E3B', border: '#10B981' },
+          amber: { bg: '#78350F', border: '#F59E0B' },
+          rose: { bg: '#831843', border: '#F43F5E' },
+          slate: { bg: '#334155', border: '#94A3B8' },
         },
-        // Dark mode overrides
-        dark: {
-          'bg-page': '#0F0D17',
-          'bg-surface': '#18162A',
-          'bg-elevated': '#1F1D30',
-          'border': '#2E2A42',
-          'text-900': '#F0EEFF',
-          'text-600': '#9B93B3',
-          'text-400': '#5E5773',
-          'accent': '#8B6FFD',
+        // Light mode overrides  
+        light: {
+          'bg-page': '#F6F5FF',
+          'bg-surface': '#FFFFFF',
+          'bg-elevated': '#F8F7FF',
+          'border': '#E8E6F0',
+          'text-900': '#1A1523',
+          'text-600': '#6E6A7C',
+          'text-400': '#A89FBC',
+          'accent': '#7C5CFC',
         },
       },
       fontFamily: {

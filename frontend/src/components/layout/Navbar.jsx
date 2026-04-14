@@ -21,7 +21,7 @@ const Navbar = ({ onMenuClick }) => {
   return (
     <div className={clsx(
       'fixed top-0 right-0 left-0 md:left-60 h-16',
-      'bg-white dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800',
+      'bg-[#1F1D30] light:bg-white border-b border-gray-700 light:border-gray-200',
       'z-30 flex items-center justify-between px-6 gap-4',
       'shadow-xs transition-all duration-250'
     )}>
@@ -31,8 +31,8 @@ const Navbar = ({ onMenuClick }) => {
           onClick={onMenuClick}
           className={clsx(
             'md:hidden p-2 rounded-md transition-colors',
-            'hover:bg-gray-100 dark:hover:bg-gray-900',
-            'text-gray-700 dark:text-gray-300'
+            'hover:bg-gray-700 light:hover:bg-gray-100',
+            'text-gray-300 light:text-gray-700'
           )}
         >
           <Menu className="w-6 h-6" strokeWidth={2} />
@@ -41,19 +41,19 @@ const Navbar = ({ onMenuClick }) => {
         {/* Search Bar */}
         <div className={clsx(
           'hidden md:flex items-center gap-3',
-          'bg-gray-100 dark:bg-gray-900',
-          'border border-gray-200 dark:border-gray-800',
+          'bg-gray-900 light:bg-gray-100',
+          'border border-gray-600 light:border-gray-200',
           'rounded-lg px-4 py-2.5 flex-1 max-w-xs',
           'transition-colors duration-250',
           'focus-within:ring-2 focus-within:ring-accent-500/50'
         )}>
-          <Search className="w-5 h-5 text-gray-400 dark:text-gray-500" strokeWidth={2} />
+          <Search className="w-5 h-5 text-gray-400 light:text-gray-400" strokeWidth={2} />
           <input
             type="text"
             placeholder="Search classes, assignments..."
             className={clsx(
-              'bg-transparent outline-none text-sm text-gray-600 dark:text-gray-400',
-              'placeholder-gray-400 dark:placeholder-gray-600',
+              'bg-transparent outline-none text-sm text-white light:text-gray-600',
+              'placeholder-gray-500 light:placeholder-gray-400',
               'flex-1'
             )}
           />
@@ -70,8 +70,8 @@ const Navbar = ({ onMenuClick }) => {
           onClick={() => navigate('/student/dashboard')}
           className={clsx(
             'relative p-2.5 rounded-md transition-colors',
-            'hover:bg-gray-100 dark:hover:bg-gray-900',
-            'text-gray-700 dark:text-gray-300'
+            'hover:bg-gray-700 light:hover:bg-gray-100',
+            'text-gray-300 light:text-gray-700'
           )}
           aria-label="Notifications"
         >
@@ -100,14 +100,14 @@ const Navbar = ({ onMenuClick }) => {
             onClick={() => setIsProfileOpen(!isProfileOpen)}
             className={clsx(
               'flex items-center gap-2 px-2 py-1 rounded-md',
-              'hover:bg-gray-100 dark:hover:bg-gray-900',
+              'hover:bg-gray-700 light:hover:bg-gray-100',
               'transition-colors'
             )}
           >
             <Avatar name={user?.name} size="sm" />
             <div className="hidden sm:flex flex-col items-start">
-              <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{user?.name}</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">{user?.role}</p>
+              <p className="text-sm font-medium text-white light:text-gray-900">{user?.name}</p>
+              <p className="text-xs text-gray-300 light:text-gray-500 capitalize">{user?.role}</p>
             </div>
           </motion.button>
 
@@ -122,14 +122,14 @@ const Navbar = ({ onMenuClick }) => {
                 onClick={(e) => e.stopPropagation()}
                 className={clsx(
                   'absolute right-0 mt-2 w-56 rounded-lg',
-                  'bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800',
+                  'bg-[#18162A] light:bg-white border border-gray-700 light:border-gray-200',
                   'shadow-lg z-40 overflow-hidden'
                 )}
               >
                 {/* Header */}
-                <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-800">
-                  <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{user?.name}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 capitalize mt-1">{user?.role}</p>
+                <div className="px-4 py-3 border-b border-gray-600 light:border-gray-200">
+                  <p className="text-sm font-semibold text-white light:text-gray-900">{user?.name}</p>
+                  <p className="text-xs text-gray-300 light:text-gray-500 capitalize mt-1">{user?.role}</p>
                 </div>
 
                 {/* Menu Items */}
@@ -139,8 +139,8 @@ const Navbar = ({ onMenuClick }) => {
                     onClick={() => setIsProfileOpen(false)}
                     className={clsx(
                       'flex items-center gap-3 px-4 py-2.5 text-sm',
-                      'text-gray-700 dark:text-gray-300',
-                      'hover:bg-gray-100 dark:hover:bg-gray-800',
+                      'text-gray-300 light:text-gray-700',
+                      'hover:bg-gray-700 light:hover:bg-gray-100',
                       'transition-colors'
                     )}
                   >
@@ -152,8 +152,8 @@ const Navbar = ({ onMenuClick }) => {
                     onClick={() => setIsProfileOpen(false)}
                     className={clsx(
                       'flex items-center gap-3 px-4 py-2.5 text-sm',
-                      'text-gray-700 dark:text-gray-300',
-                      'hover:bg-gray-100 dark:hover:bg-gray-800',
+                      'text-gray-300 light:text-gray-700',
+                      'hover:bg-gray-700 light:hover:bg-gray-100',
                       'transition-colors'
                     )}
                   >
@@ -163,7 +163,7 @@ const Navbar = ({ onMenuClick }) => {
                 </div>
 
                 {/* Divider */}
-                <div className="border-t border-gray-200 dark:border-gray-800" />
+                <div className="border-t border-gray-700 light:border-gray-200" />
 
                 {/* Logout */}
                 <button
@@ -174,8 +174,8 @@ const Navbar = ({ onMenuClick }) => {
                   }}
                   className={clsx(
                     'w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium',
-                    'text-red-600 dark:text-red-400',
-                    'hover:bg-red-50 dark:hover:bg-red-900/20',
+                    'text-red-400 light:text-red-600',
+                    'hover:bg-red-900/20 light:hover:bg-red-50',
                     'transition-colors'
                   )}
                 >

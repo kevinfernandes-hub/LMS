@@ -11,13 +11,13 @@ const Badge = ({
   className = '',
 }) => {
   const variants = {
-    default: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300',
-    pending: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
-    submitted: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-    graded: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-    'on-time': 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
-    late: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
-    regraded: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400',
+    default: 'bg-gray-800 text-gray-300 light:bg-gray-100 light:text-gray-700',
+    pending: 'bg-amber-900/30 text-amber-400 light:bg-amber-100 light:text-amber-700',
+    submitted: 'bg-blue-900/30 text-blue-400 light:bg-blue-100 light:text-blue-700',
+    graded: 'bg-green-900/30 text-green-400 light:bg-green-100 light:text-green-700',
+    'on-time': 'bg-emerald-900/30 text-emerald-400 light:bg-emerald-100 light:text-emerald-700',
+    late: 'bg-orange-900/30 text-orange-400 light:bg-orange-100 light:text-orange-700',
+    regraded: 'bg-indigo-900/30 text-indigo-400 light:bg-indigo-100 light:text-indigo-700',
   };
 
   const sizes = {

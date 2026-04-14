@@ -10,7 +10,7 @@ const AppShell = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-950 flex">
+    <div className="min-h-screen bg-[#0f0f23] light:bg-white flex">
       {/* Sidebar */}
       <Sidebar 
         isMobile={true}

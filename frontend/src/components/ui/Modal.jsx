@@ -58,22 +58,22 @@ const Modal = ({
             className={clsx(
               'fixed',
               positions[position] || positions.center,
-              'bg-white dark:bg-gray-950 rounded-lg shadow-xl z-50',
+              'bg-[#1a1828] light:bg-white rounded-lg shadow-xl z-50',
               sizes[size],
               'w-full mx-4 max-h-[90vh] flex flex-col'
             )}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="px-6 py-5 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between flex-shrink-0">
+            <div className="px-6 py-5 border-b border-gray-600 light:border-gray-200 flex items-center justify-between flex-shrink-0">
               {title && (
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 font-cabinet-grotesk">
+                <h2 className="text-lg font-semibold text-white light:text-gray-900 font-cabinet-grotesk">
                   {title}
                 </h2>
               )}
               <button
                 onClick={onClose}
-                className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-900 rounded-md transition-colors text-gray-500 dark:text-gray-400"
+                className="p-1.5 hover:bg-gray-700 light:hover:bg-gray-100 rounded-md transition-colors text-gray-300 light:text-gray-500"
               >
                 <X size={20} strokeWidth={2} />
               </button>
@@ -86,7 +86,7 @@ const Modal = ({
 
             {/* Footer */}
             {footer && (
-              <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-800 flex gap-3 justify-end flex-shrink-0">
+              <div className="px-6 py-4 border-t border-gray-600 light:border-gray-200 flex gap-3 justify-end flex-shrink-0">
                 {footer}
               </div>
             )}

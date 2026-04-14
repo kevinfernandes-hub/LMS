@@ -24,7 +24,7 @@ const Input = React.forwardRef(
     return (
       <div className={clsx('w-full', containerClassName)}>
         {label && (
-          <label htmlFor={inputId} className="block text-sm font-medium text-gray-900 mb-2.5 dark:text-gray-100">
+          <label htmlFor={inputId} className="block text-sm font-medium text-white mb-2.5 light:text-gray-900">
             {label}
           </label>
         )}
@@ -35,17 +35,17 @@ const Input = React.forwardRef(
             type={type}
             name={name}
             className={clsx(
-              'w-full px-4 py-2.5 border border-gray-200 rounded-md',
-              'bg-white text-gray-900 placeholder-gray-400',
+              'w-full px-4 py-2.5 border border-gray-700 rounded-md',
+              'bg-[#0f0f23] text-white placeholder-gray-400',
               'transition-all duration-250',
               'focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-accent-500',
-              'disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed',
+              'disabled:bg-gray-800 disabled:text-gray-400 disabled:cursor-not-allowed',
               Icon && iconPosition === 'left' && 'pl-10',
               Icon && iconPosition === 'right' && 'pr-10',
               error && 'border-red-500 focus:ring-red-500 focus:border-red-500',
-              'dark:bg-gray-900 dark:text-gray-100 dark:border-gray-700',
-              'dark:placeholder-gray-500 dark:focus:ring-accent-600',
-              'dark:disabled:bg-gray-800 dark:disabled:text-gray-400',
+              'light:bg-white light:text-gray-900 light:border-gray-200',
+              'light:placeholder-gray-400 light:focus:ring-accent-600',
+              'light:disabled:bg-gray-50 light:disabled:text-gray-500',
               className
             )}
             {...props}
@@ -61,7 +61,7 @@ const Input = React.forwardRef(
           )}
         </div>
         {error && (
-          <p className="mt-2 text-sm text-red-600 dark:text-red-400">{error}</p>
+          <p className="mt-2 text-sm text-red-400 light:text-red-600">{error}</p>
         )}
       </div>
     );

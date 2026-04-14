@@ -1,5 +1,48 @@
-/* CSS Custom Properties - Light Mode */
+/* CSS Custom Properties - Dark Mode (Default) */
 :root {
+  /* Background */
+  --bg-page: #0f0f23;
+  --bg-surface: rgba(24, 22, 42, 0.3);
+  --bg-elevated: rgba(31, 29, 48, 0.4);
+
+  /* Border */
+  --border: #444444;
+  --border-strong: #555555;
+
+  /* Text */
+  --text-900: #FFFFFF;
+  --text-600: #E8E6F0;
+  --text-400: #A89FBC;
+
+  /* Accent - Violet (Keep as is - looks good on dark) */
+  --accent-50: #2D1F6E;
+  --accent-100: #44318D;
+  --accent-200: #5A47AD;
+  --accent-500: #7C5CFC;
+  --accent-600: #6644F4;
+  --accent-900: #F3F0FF;
+
+  /* Semantic */
+  --success: #10B981;
+  --warning: #F59E0B;
+  --danger: #EF4444;
+  --info: #6366F1;
+
+  /* Semantic Light (Dark theme appropriate) */
+  --success-light: #064E3B;
+  --warning-light: #78350F;
+  --danger-light: #7F1D1D;
+  --info-light: #312E81;
+
+  /* Semantic Border */
+  --success-border: #059669;
+  --warning-border: #D97706;
+  --danger-border: #DC2626;
+  --info-border: #4F46E5;
+}
+
+/* Light mode - only apply when .light class is explicitly set */
+.light {
   /* Background */
   --bg-page: #F6F5FF;
   --bg-surface: #FFFFFF;
@@ -14,19 +57,13 @@
   --text-600: #6E6A7C;
   --text-400: #A89FBC;
 
-  /* Accent - Violet */
+  /* Accent */
   --accent-50: #F3F0FF;
   --accent-100: #E5DEFF;
   --accent-200: #C9BBFF;
   --accent-500: #7C5CFC;
   --accent-600: #6644F4;
   --accent-900: #2D1F6E;
-
-  /* Semantic */
-  --success: #10B981;
-  --warning: #F59E0B;
-  --danger: #EF4444;
-  --info: #6366F1;
 
   /* Semantic Light */
   --success-light: #F0FDF4;
@@ -39,38 +76,6 @@
   --warning-border: #FDE68A;
   --danger-border: #FECDD3;
   --info-border: #C7D2FE;
-}
-
-/* Remove automatic dark mode detection - use explicit class instead */
-@media (prefers-color-scheme: dark) {
-  :root {
-    /* Light mode colors still apply - will only use dark if .dark class added */
-  }
-}
-
-/* Dark mode - only apply when .dark class is explicitly set */
-.dark {
-  /* Background */
-  --bg-page: #0F0D17;
-  --bg-surface: #18162A;
-  --bg-elevated: #1F1D30;
-
-  /* Border */
-  --border: #2E2A42;
-  --border-strong: #3D3850;
-
-  /* Text */
-  --text-900: #F0EEFF;
-  --text-600: #9B93B3;
-  --text-400: #5E5773;
-
-  /* Accent */
-  --accent-50: #2D1F6E;
-  --accent-100: #44318D;
-  --accent-200: #5A47AD;
-  --accent-500: #8B6FFD;
-  --accent-600: #7C5CFC;
-  --accent-900: #F3F0FF;
 }
 
 /* Global Styles */
@@ -101,7 +106,7 @@ h6 {
   font-family: 'Cabinet Grotesk', system-ui, sans-serif;
   font-weight: 600;
   margin: 0;
-  color: var(--text-900);
+  color: #FFFFFF;
 }
 
 h1 {
