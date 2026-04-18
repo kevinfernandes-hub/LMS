@@ -17,6 +17,7 @@ import notificationsRoutes from './routes/notifications.js';
 import adminRoutes from './routes/admin.js';
 import modulesRoutes from './routes/modules.js';
 import lessonsRoutes from './routes/lessons.js';
+import discussionsRoutes from './routes/discussions.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -45,6 +46,7 @@ app.use('/api/notifications', notificationsRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/modules', modulesRoutes);
 app.use('/api/lessons', lessonsRoutes);
+app.use('/api/discussions', discussionsRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
