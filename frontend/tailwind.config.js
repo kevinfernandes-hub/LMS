@@ -8,31 +8,37 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Base palette - Dark mode (default) with maximum visibility
+        // New palette for light mode
+        primary: {
+          DEFAULT: '#142047', // Deep navy
+          dark: '#0d1530',
+          light: '#22306b',
+        },
+        accent: {
+          DEFAULT: '#142047',
+          50: '#e6eaf3',
+          100: '#cfd7e6',
+          200: '#b7c3d9',
+          500: '#142047',
+          600: '#101a38',
+          900: '#0d1530',
+        },
         bg: {
-          page: '#0f0f23',
-          surface: 'rgba(24, 22, 42, 0.3)',
-          elevated: 'rgba(31, 29, 48, 0.4)',
+          page: '#fff',
+          surface: '#f8f9fb',
+          elevated: '#f3f4f8',
         },
         border: {
-          DEFAULT: '#444444',
-          strong: '#555555',
+          DEFAULT: '#d1d5db',
+          strong: '#bfc5ce',
         },
         text: {
-          900: '#FFFFFF',
-          600: '#E8E6F0',
-          400: '#A89FBC',
+          900: '#142047',
+          700: '#22223b',
+          600: '#444e5e',
+          400: '#6b7280',
         },
-        // Accent - Violet (Keep as is)
-        accent: {
-          50: '#2D1F6E',
-          100: '#44318D',
-          200: '#5A47AD',
-          500: '#7C5CFC',
-          600: '#6644F4',
-          900: '#F3F0FF',
-        },
-        // Semantic colors
+        // Semantic colors (unchanged)
         success: {
           DEFAULT: '#10B981',
           light: '#064E3B',
@@ -53,9 +59,9 @@ export default {
           light: '#312E81',
           border: '#4F46E5',
         },
-        // Course colors (adjusted for dark theme)
+        // Course colors (adjusted for new palette)
         course: {
-          violet: { bg: '#2D1F6E', border: '#7C5CFC' },
+          violet: { bg: '#142047', border: '#22306b' },
           blue: { bg: '#1e3a8a', border: '#3B82F6' },
           emerald: { bg: '#064E3B', border: '#10B981' },
           amber: { bg: '#78350F', border: '#F59E0B' },

@@ -44,20 +44,26 @@
 /* Light mode - only apply when .light class is explicitly set */
 .light {
   /* Background */
-  --bg-page: #F6F5FF;
-  --bg-surface: #FFFFFF;
-  --bg-elevated: #F8F7FF;
+  --bg-page: #fff;
+  --bg-surface: #f8f9fb;
+  --bg-elevated: #f3f4f8;
 
   /* Border */
-  --border: #E8E6F0;
-  --border-strong: #D0CCE8;
+  --border: #d1d5db;
+  --border-strong: #bfc5ce;
 
   /* Text */
-  --text-900: #1A1523;
-  --text-600: #6E6A7C;
-  --text-400: #A89FBC;
+  --text-900: #142047;
+  --text-600: #444e5e;
+  --text-400: #6b7280;
 
   /* Accent */
+  --accent-50: #e6eaf3;
+  --accent-100: #cfd7e6;
+  --accent-200: #b7c3d9;
+  --accent-500: #142047;
+  --accent-600: #101a38;
+  --accent-900: #0d1530;
   --accent-50: #F3F0FF;
   --accent-100: #E5DEFF;
   --accent-200: #C9BBFF;

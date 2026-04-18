@@ -43,31 +43,26 @@ const Button = React.forwardRef(
       lg: 'px-6 py-3 text-lg gap-3',
     };
 
-    // Variant styles using new design tokens (Dark mode by default)
+    // Variant styles using new design tokens (Light mode default)
     const variantStyles = {
       primary: `
-        bg-gradient-to-r from-accent-500 to-accent-600 text-white
-        hover:from-accent-600 hover:to-accent-700
-        active:from-accent-700 active:to-accent-800
+        bg-primary text-white
+        hover:bg-primary-dark
+        active:bg-primary-light
         shadow-sm hover:shadow-md
-        disabled:from-gray-600 disabled:to-gray-700
+        disabled:bg-gray-300
+        border border-primary
       `,
       secondary: `
-        bg-gray-800 text-gray-100
-        hover:bg-gray-700
-        active:bg-gray-600
+        bg-white text-primary border border-primary
+        hover:bg-primary hover:text-white
+        active:bg-primary-dark active:text-white
         shadow-xs
-        light:bg-gray-100 light:text-gray-900
-        light:hover:bg-gray-200
-        light:active:bg-gray-300
       `,
       ghost: `
-        text-gray-300 bg-transparent
-        hover:bg-gray-900
-        active:bg-gray-800
-        light:text-gray-700
-        light:hover:bg-gray-100
-        light:active:bg-gray-200
+        text-primary bg-transparent
+        hover:bg-gray-100
+        active:bg-gray-200
       `,
       danger: `
         bg-red-600 text-white

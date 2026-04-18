@@ -15,10 +15,10 @@ const Card = ({
   const cardContent = (
     <div
       className={clsx(
-        'bg-transparent rounded-md border border-gray-600 shadow-xs',
+        'bg-transparent rounded-xl border border-gray-300 shadow-sm',
         'transition-all duration-250',
-        'light:bg-white light:border-gray-200',
-        hoverable && 'hover:shadow-sm hover:border-gray-500 light:hover:border-gray-300 cursor-pointer',
+        'light:bg-white light:border-[#bfc5ce]',
+        hoverable && 'hover:shadow-md hover:border-primary-DEFAULT light:hover:border-primary-DEFAULT cursor-pointer',
         className
       )}
       {...props}
