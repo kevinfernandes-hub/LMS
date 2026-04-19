@@ -10,14 +10,16 @@ const Card = ({
   className = '',
   hoverable = false,
   animated = false,
+  glass = false,
   ...props
 }) => {
   const cardContent = (
     <div
       className={clsx(
-        'bg-transparent rounded-xl border border-gray-300 shadow-sm',
-        'transition-all duration-250',
+        'rounded-xl border shadow-sm transition-all duration-250',
+        glass ? 'bg-white/10 backdrop-blur-md border-white/20' : 'bg-transparent border-gray-300',
         'light:bg-white light:border-[#bfc5ce]',
+        glass && 'light:bg-white/80 light:backdrop-blur-lg light:border-white/40',
         hoverable && 'hover:shadow-md hover:border-primary-DEFAULT light:hover:border-primary-DEFAULT cursor-pointer',
         className
       )}

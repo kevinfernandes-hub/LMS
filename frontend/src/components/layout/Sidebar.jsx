@@ -12,6 +12,7 @@ import {
   LogOut,
   Menu,
   X,
+  GraduationCap
 } from 'lucide-react';
 import Avatar from '../ui/Avatar.jsx';
 import { useAuthStore } from '../../store/index.js';
@@ -41,17 +42,17 @@ const Sidebar = ({ isMobile = false, isOpen, onClose }) => {
   const content = (
     <>
       {/* Logo & Branding */}
-      <div className="p-6 border-b border-gray-700">
+      <div className="p-8 border-b border-white/5">
         <div className="flex items-center gap-3">
           <motion.div
-            whileHover={{ scale: 1.05 }}
-            className="w-12 h-12 rounded-lg flex items-center justify-center shadow-lg flex-shrink-0 overflow-hidden"
+            whileHover={{ scale: 1.05, rotate: 5 }}
+            className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#7C5CFC] to-[#4B2676] flex items-center justify-center shadow-2xl shadow-indigo-500/20 flex-shrink-0"
           >
-            <img src="/logo.jpeg" alt="SVPCET Logo" className="w-full h-full object-cover" />
+            <GraduationCap className="w-7 h-7 text-white" />
           </motion.div>
           <div>
-            <h1 className="text-lg font-semibold text-white font-cabinet-grotesk">SVPCET</h1>
-            <p className="text-xs text-gray-300">Rise & Shine</p>
+            <h1 className="text-xl font-black text-white tracking-tight leading-none">Acadify</h1>
+            <p className="text-[10px] font-bold text-indigo-300/60 uppercase tracking-[0.2em] mt-1">LMS Platform</p>
           </div>
         </div>
       </div>
@@ -72,16 +73,16 @@ const Sidebar = ({ isMobile = false, isOpen, onClose }) => {
               <Link
                 to={item.href}
                 onClick={isMobile ? onClose : undefined}
-                className={`flex items-center gap-3 px-4 py-2.5 rounded-md transition-all duration-250 group relative ${
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 group relative ${
                   isActive
-                    ? 'bg-[#7C5CFC] text-white shadow-lg'
-                    : 'text-white hover:text-white hover:bg-gray-700'
+                    ? 'bg-white/10 text-white shadow-xl backdrop-blur-md'
+                    : 'text-indigo-200/60 hover:text-white hover:bg-white/5'
                 }`}
               >
                 {isActive && (
                   <motion.div
                     layoutId="activeIndicator"
-                    className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#7C5CFC] rounded-r-lg"
+                    className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-[#7C5CFC] rounded-r-full"
                     transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                   />
                 )}
@@ -131,7 +132,7 @@ const Sidebar = ({ isMobile = false, isOpen, onClose }) => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={onClose}
-              className="fixed inset-0 bg-black/50 z-40"
+              className="fixed inset-0 bg-[#1E1B4B]/80 backdrop-blur-sm z-40"
             />
           )}
         </AnimatePresence>
@@ -141,7 +142,7 @@ const Sidebar = ({ isMobile = false, isOpen, onClose }) => {
           initial={{ x: -280 }}
           animate={{ x: isOpen ? 0 : -280 }}
           transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-          className="fixed left-0 top-0 bottom-0 w-72 bg-gradient-to-b from-[#18162A] to-[#1F1D30] z-50 flex flex-col shadow-2xl"
+          className="fixed left-0 top-0 bottom-0 w-72 bg-[#1E1B4B] z-50 flex flex-col shadow-2xl"
         >
           {content}
         </motion.div>
@@ -150,7 +151,7 @@ const Sidebar = ({ isMobile = false, isOpen, onClose }) => {
   }
 
   return (
-    <div className="fixed left-0 top-0 bottom-0 w-60 bg-gradient-to-b from-[#18162A] to-[#1F1D30] flex flex-col hidden md:flex shadow-xl">
+    <div className="fixed left-0 top-0 bottom-0 w-60 bg-[#1E1B4B] flex flex-col hidden md:flex shadow-2xl border-r border-white/5">
       {content}
     </div>
   );

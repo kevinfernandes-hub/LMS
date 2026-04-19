@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '../store/index.js';
+export { useAuthStore };
 import { authAPI, coursesAPI, assignmentsAPI, announcementsAPI, materialsAPI, notificationsAPI } from '../api/client.js';
 
 // Auth hooks

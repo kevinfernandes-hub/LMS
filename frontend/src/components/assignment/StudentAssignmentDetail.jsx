@@ -12,6 +12,11 @@ import {
   Archive,
   Undo2,
   MessageSquare,
+  Clock,
+  Award,
+  ChevronRight,
+  Info,
+  X
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -48,19 +53,11 @@ const fileIconFor = (file) => {
   const type = file?.type || '';
   const name = file?.name || '';
   const ext = name.split('.').pop()?.toLowerCase();
-
   if (type === 'application/pdf' || ext === 'pdf') return FileText;
   if (type.includes('word') || ext === 'doc' || ext === 'docx') return FileText;
   if (type.startsWith('image/') || ['jpg', 'jpeg', 'png', 'gif'].includes(ext)) return ImageIcon;
   if (type === 'application/zip' || ext === 'zip') return Archive;
   return FileText;
-};
-
-const statusBadgeVariant = ({ graded, submitted, missing }) => {
-  if (graded) return { label: 'graded', variant: 'graded' };
-  if (submitted) return { label: 'turned in', variant: 'submitted' };
-  if (missing) return { label: 'missing', variant: 'late' };
-  return { label: 'assigned', variant: 'default' };
 };
 
 export default function StudentAssignmentDetail() {
@@ -95,14 +92,8 @@ export default function StudentAssignmentDetail() {
   const dueDate = assignment?.due_date ? new Date(assignment.due_date) : null;
   const isMissing = !graded && !submitted && dueDate && !Number.isNaN(dueDate.getTime()) && new Date() > dueDate;
 
-  const badge = useMemo(
-    () => statusBadgeVariant({ graded, submitted, missing: isMissing }),
-    [graded, submitted, isMissing]
-  );
-
   const driveValid = isValidDriveLink(driveLink);
   const driveInvalid = !!driveLink.trim() && !driveValid;
-
   const canTurnIn = !graded && (selectedFile || driveValid);
 
   useEffect(() => {
@@ -112,7 +103,6 @@ export default function StudentAssignmentDetail() {
       try {
         const aRes = await assignmentsAPI.get(assignmentId);
         setAssignment(aRes.data);
-
         try {
           const cRes = await coursesAPI.get(aRes.data.course_id);
           setCourse(cRes.data);
@@ -126,18 +116,14 @@ export default function StudentAssignmentDetail() {
         setIsLoading(false);
       }
     };
-
     run();
   }, [assignmentId, navigate]);
 
   useEffect(() => {
-    // Prefill sidebar with existing data when in draft / not submitted.
     if (graded || submitted) return;
     if (!submission) return;
-
     const existingDrive = submission.drive_link || submission.link_url || '';
     const existingComment = submission.text_comment || submission.submission_text || '';
-
     setDriveLink(existingDrive);
     setTextComment(existingComment);
     setShowComment(!!existingComment);
@@ -151,19 +137,15 @@ export default function StudentAssignmentDetail() {
   const handleTurnIn = async () => {
     if (!assignmentId) return;
     if (!canTurnIn) return;
-
     const formData = new FormData();
     if (selectedFile) formData.append('file', selectedFile);
     if (driveValid) formData.append('drive_link', driveLink.trim());
     if (textComment.trim()) formData.append('text_comment', textComment.trim());
-
     try {
       await submitMutation.mutateAsync(formData);
       setTurnInConfirmOpen(false);
       setSelectedFile(null);
-    } catch (err) {
-      // handled by hook
-    }
+    } catch (err) {}
   };
 
   const handleUnsubmit = async () => {
@@ -171,9 +153,7 @@ export default function StudentAssignmentDetail() {
     try {
       await unsubmitMutation.mutateAsync();
       setUnsubmitConfirmOpen(false);
-    } catch {
-      // handled by hook
-    }
+    } catch {}
   };
 
   if (isLoading) return <Loading />;
@@ -183,380 +163,187 @@ export default function StudentAssignmentDetail() {
     : 'No due date';
 
   const teacherName = course?.first_name ? `${course.first_name} ${course.last_name || ''}`.trim() : null;
-
-  const ExistingFileIcon = submission?.file_name
-    ? fileIconFor({ name: submission.file_name, type: submission.file_type })
-    : FileText;
-
+  const ExistingFileIcon = submission?.file_name ? fileIconFor({ name: submission.file_name, type: submission.file_type }) : FileText;
   const SelectedFileIcon = selectedFile ? fileIconFor(selectedFile) : FileText;
 
   return (
-    <div className="space-y-6">
-      <Button variant="ghost" onClick={() => navigate(-1)} className="flex items-center gap-2">
-        <ArrowLeft className="w-5 h-5" /> Back
+    <div className="p-6 space-y-8 animate-in fade-in duration-500">
+      <Button variant="ghost" onClick={() => navigate(-1)} className="flex items-center gap-2 font-bold text-gray-500 hover:text-[#4B2676]">
+        <ArrowLeft className="w-5 h-5" /> Back to Course
       </Button>
 
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        {/* Left panel */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+        {/* Main Content */}
         <div className="lg:col-span-3 space-y-6">
-          <Card className="p-6 space-y-4">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900 font-cabinet-grotesk">
-                  {assignment?.title}
-                </h1>
-                <div className="mt-2 text-xs text-gray-500 flex flex-wrap gap-2">
-                  <span>Due: {dueText}</span>
-                  <span>·</span>
-                  <span>{assignment?.points || 100} points</span>
-                  {course?.title && (
-                    <>
-                      <span>·</span>
-                      <span>{course.title}</span>
-                    </>
-                  )}
+          <Card glass className="p-8 md:p-10 rounded-[2.5rem] border-gray-100">
+            <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-8">
+              <div className="space-y-4">
+                <Badge className="bg-[#4B2676] text-white px-4 py-1.5 rounded-full font-black text-[10px] uppercase tracking-widest">
+                  {course?.title || 'Course Assignment'}
+                </Badge>
+                <h1 className="text-4xl font-black text-[#1E1B4B] tracking-tight">{assignment?.title}</h1>
+                <div className="flex flex-wrap items-center gap-4 text-sm font-bold text-gray-400 uppercase tracking-widest">
+                  <span className="flex items-center gap-1.5"><Clock className="w-4 h-4" /> Due {dueText}</span>
+                  <span>•</span>
+                  <span className="flex items-center gap-1.5"><Award className="w-4 h-4" /> {assignment?.points} Points</span>
                 </div>
               </div>
 
-              <Badge variant={badge.variant} size="sm">
-                {badge.label}
-              </Badge>
-            </div>
-
-            <div className="border-t border-gray-200 pt-4">
-              <p className="text-xs font-semibold text-gray-500 tracking-wider">INSTRUCTIONS</p>
-              <p className="mt-2 text-sm text-gray-800 whitespace-pre-wrap">
-                {assignment?.instructions || <span className="text-gray-500 italic">No instructions provided.</span>}
-              </p>
-            </div>
-
-            {assignment?.attachment_url && (
-              <div className="border-t border-gray-200 pt-4">
-                <p className="text-xs font-semibold text-gray-500 tracking-wider">ATTACHMENTS</p>
-                <div className="mt-2">
-                  <a
-                    href={assignment.attachment_url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-2 text-sm text-indigo-600 hover:underline"
-                  >
-                    <FileText className="w-4 h-4" /> Download attachment
-                  </a>
+              {graded && (
+                <div className="flex flex-col items-center justify-center w-24 h-24 rounded-[2rem] bg-emerald-50 text-emerald-700 border-2 border-white shadow-xl shadow-emerald-100">
+                  <span className="text-3xl font-black">{submission.grade}</span>
+                  <span className="text-[10px] font-black uppercase tracking-tighter opacity-60">Score</span>
                 </div>
+              )}
+            </div>
+
+            <div className="space-y-6">
+              <div className="p-6 rounded-2xl bg-gray-50/50 border border-gray-100">
+                <h3 className="text-xs font-black text-[#4B2676] uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
+                  <Info className="w-4 h-4" /> Instructions
+                </h3>
+                <p className="text-gray-700 font-medium leading-relaxed whitespace-pre-wrap">
+                  {assignment?.instructions || "No specific instructions provided for this assignment."}
+                </p>
               </div>
-            )}
+
+              {assignment?.attachment_url && (
+                <div className="flex items-center gap-4 p-4 rounded-2xl border-2 border-indigo-50 bg-white">
+                  <div className="w-12 h-12 rounded-xl bg-indigo-50 text-[#4B2676] flex items-center justify-center">
+                    <FileText className="w-6 h-6" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold text-[#1E1B4B] truncate">Assignment Materials</p>
+                    <a href={assignment.attachment_url} target="_blank" rel="noreferrer" className="text-xs font-bold text-[#4B2676] hover:underline">
+                      Download Reference File
+                    </a>
+                  </div>
+                </div>
+              )}
+            </div>
           </Card>
 
-          {/* Graded view */}
-          {graded && (
-            <Card className="p-6 space-y-4">
-              <div>
-                <div className="flex items-end gap-2">
-                  <div className="text-4xl font-bold text-gray-900 font-cabinet-grotesk">
-                    {submission.grade}
-                  </div>
-                  <div className="text-lg text-gray-500">/{assignment?.points || 100}</div>
-                </div>
-                <div className="mt-3 h-2 w-full bg-gray-200 rounded-full overflow-hidden">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${Math.min(100, Math.max(0, (Number(submission.grade) / (assignment?.points || 100)) * 100))}%` }}
-                    transition={{ duration: 0.8, ease: 'easeOut', delay: 0.15 }}
-                    className={
-                      (Number(submission.grade) / (assignment?.points || 100)) >= 0.75
-                        ? 'h-full bg-emerald-500'
-                        : (Number(submission.grade) / (assignment?.points || 100)) >= 0.5
-                          ? 'h-full bg-amber-500'
-                          : 'h-full bg-red-500'
-                    }
-                  />
-                </div>
-              </div>
-
-              {submission.feedback && (
-                <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
-                  <p className="text-xs font-semibold text-gray-500 tracking-wider">FEEDBACK</p>
-                  <p className="mt-2 text-sm text-gray-800 whitespace-pre-wrap">{submission.feedback}</p>
-                </div>
-              )}
-
-              {(submission.file_url || submission.drive_link || submission.link_url || submission.text_comment || submission.submission_text) && (
-                <details className="border border-gray-200 rounded-lg p-4">
-                  <summary className="text-sm text-gray-700 cursor-pointer select-none">
-                    View your submission
-                  </summary>
-                  <div className="mt-3 space-y-2">
-                    {submission.file_url && (
-                      <a
-                        href={submission.file_url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="block text-sm text-indigo-600 hover:underline"
-                      >
-                        Open submitted file
-                      </a>
-                    )}
-                    {(submission.drive_link || submission.link_url) && (
-                      <a
-                        href={submission.drive_link || submission.link_url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="block text-sm text-indigo-600 hover:underline"
-                      >
-                        Open submitted Drive link
-                      </a>
-                    )}
-                    {(submission.text_comment || submission.submission_text) && (
-                      <p className="text-sm text-gray-700 whitespace-pre-wrap">
-                        {(submission.text_comment || submission.submission_text)}
-                      </p>
-                    )}
-                  </div>
-                </details>
-              )}
-            </Card>
+          {graded && submission.feedback && (
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+              <Card glass className="p-8 rounded-[2.5rem] bg-emerald-50/30 border-emerald-100">
+                <h3 className="text-xs font-black text-emerald-700 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
+                  <MessageSquare className="w-4 h-4" /> Instructor Feedback
+                </h3>
+                <p className="text-emerald-900 font-medium leading-relaxed italic">
+                  "{submission.feedback}"
+                </p>
+              </Card>
+            </motion.div>
           )}
         </div>
 
-        {/* Right panel */}
-        <div className="lg:col-span-2">
-          <Card className="p-5 space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-gray-900">Your work</h2>
-              {submitted && !graded && (
-                <span className="inline-flex items-center gap-2 text-sm text-green-700">
-                  <CheckCircle className="w-4 h-4" /> Turned in
-                </span>
-              )}
-              {!submitted && !graded && (
-                <span className="inline-flex items-center gap-2 text-sm text-gray-600">
-                  <AlertCircle className="w-4 h-4" /> Not turned in
-                </span>
-              )}
-            </div>
+        {/* Sidebar: Submission */}
+        <div className="lg:col-span-2 space-y-6">
+          <Card glass className="p-8 rounded-[2.5rem] border-gray-100 shadow-xl">
+            <h2 className="text-xl font-black text-[#1E1B4B] mb-6 flex items-center justify-between">
+              Your Work
+              {submitted && <Badge className="bg-emerald-50 text-emerald-700 border-emerald-100">Turned In</Badge>}
+              {isMissing && <Badge className="bg-rose-50 text-rose-700 border-rose-100">Missing</Badge>}
+            </h2>
 
-            {/* STATE 2: submitted */}
-            {submitted && !graded && (
-              <motion.div
-                initial={{ opacity: 0, y: -8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.25 }}
-                className="space-y-3"
-              >
-                <div className="border border-emerald-200 bg-emerald-50 rounded-lg p-3">
-                  <div className="flex items-center gap-2 text-emerald-700 font-medium">
-                    <CheckCircle className="w-4 h-4" /> Turned in
+            {submitted && !graded ? (
+              <div className="space-y-6">
+                <div className="p-6 rounded-2xl bg-emerald-50/50 border border-emerald-100 space-y-4">
+                  <div className="flex items-center gap-3 text-emerald-700 font-black text-sm uppercase tracking-widest">
+                    <CheckCircle className="w-5 h-5" /> All caught up!
                   </div>
-                  {submission?.submitted_at && (
-                    <p className="text-xs text-gray-600 mt-1">
-                      Submitted {new Date(submission.submitted_at).toLocaleString()}
-                    </p>
+                  <p className="text-xs text-emerald-600 font-medium">
+                    Submitted on {new Date(submission.submitted_at).toLocaleDateString()} at {new Date(submission.submitted_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </p>
+                </div>
+
+                <div className="space-y-3">
+                  {submission.file_url && (
+                    <a href={submission.file_url} target="_blank" rel="noreferrer" className="flex items-center justify-between p-4 rounded-xl bg-white border border-gray-100 group hover:border-[#4B2676]/20 transition-all">
+                      <div className="flex items-center gap-3">
+                        <ExistingFileIcon className="w-5 h-5 text-[#4B2676]" />
+                        <span className="text-sm font-bold text-[#1E1B4B] truncate max-w-[150px]">{submission.file_name}</span>
+                      </div>
+                      <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-[#4B2676]" />
+                    </a>
+                  )}
+                  {submission.drive_link && (
+                    <a href={submission.drive_link} target="_blank" rel="noreferrer" className="flex items-center justify-between p-4 rounded-xl bg-white border border-gray-100 group hover:border-[#4B2676]/20 transition-all">
+                      <div className="flex items-center gap-3">
+                        <LinkIcon className="w-5 h-5 text-[#4B2676]" />
+                        <span className="text-sm font-bold text-[#1E1B4B]">Google Drive Link</span>
+                      </div>
+                      <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-[#4B2676]" />
+                    </a>
                   )}
                 </div>
 
-                {submission?.file_url && (
-                  <a
-                    href={submission.file_url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex items-center gap-2 text-sm text-indigo-600 hover:underline"
-                  >
-                    <ExistingFileIcon className="w-4 h-4" /> Open submitted file
-                  </a>
-                )}
-
-                {(submission?.drive_link || submission?.link_url) && (
-                  <a
-                    href={submission.drive_link || submission.link_url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex items-center gap-2 text-sm text-indigo-600 hover:underline"
-                  >
-                    <LinkIcon className="w-4 h-4" /> Open Drive link
-                  </a>
-                )}
-
-                {(submission?.text_comment || submission?.submission_text) && (
-                  <div className="text-sm text-gray-700 italic whitespace-pre-wrap">
-                    {submission.text_comment || submission.submission_text}
-                  </div>
-                )}
-
-                <Button
-                  variant="secondary"
-                  className="w-full"
-                  icon={<Undo2 className="w-4 h-4" />}
-                  onClick={() => setUnsubmitConfirmOpen(true)}
-                  disabled={unsubmitMutation.isPending}
-                >
-                  Unsubmit
+                <Button variant="secondary" onClick={() => setUnsubmitConfirmOpen(true)} className="w-full py-4 rounded-xl font-bold text-[#4B2676] border-2 border-indigo-50 hover:bg-indigo-50">
+                  <Undo2 className="w-4 h-4 mr-2" /> Unsubmit Assignment
                 </Button>
-              </motion.div>
-            )}
-
-            {/* STATE 1: draft / not submitted */}
-            {!graded && !submitted && (
-              <div className="space-y-4">
-                <motion.div
-                  onDragEnter={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    setIsDragOver(true);
-                  }}
-                  onDragOver={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    setIsDragOver(true);
-                  }}
-                  onDragLeave={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    setIsDragOver(false);
-                  }}
-                  onDrop={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    setIsDragOver(false);
-                    const file = e.dataTransfer.files?.[0];
-                    handleFileSelected(file);
-                  }}
-                  className={
-                    `border-2 border-dashed rounded-xl p-6 text-center transition-colors ` +
-                    (isDragOver
-                      ? 'border-indigo-500 bg-indigo-50'
-                      : 'border-indigo-200 bg-gray-50')
-                  }
+              </div>
+            ) : graded ? (
+              <div className="p-6 rounded-2xl bg-indigo-50/50 border border-indigo-100 text-center">
+                <p className="text-sm font-bold text-[#4B2676]">This assignment has been graded and is now locked for editing.</p>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                <div
+                  onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
+                  onDragLeave={() => setIsDragOver(false)}
+                  onDrop={(e) => { e.preventDefault(); setIsDragOver(false); handleFileSelected(e.dataTransfer.files?.[0]); }}
+                  className={`border-2 border-dashed rounded-3xl p-8 text-center transition-all duration-300 ${isDragOver ? 'border-[#4B2676] bg-indigo-50/50 scale-[0.98]' : 'border-gray-200 bg-gray-50/50 hover:bg-gray-50'}`}
                 >
-                  <Upload className="w-8 h-8 text-gray-400 mx-auto" />
-                  <p className="mt-2 text-sm text-gray-700">Drag a file here or</p>
-                  <button
-                    type="button"
-                    className="mt-1 text-sm text-indigo-600 hover:underline"
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    Browse files
-                  </button>
-                  <p className="mt-2 text-xs text-gray-500">PDF, Word, images up to 25MB</p>
-
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    className="hidden"
-                    accept=".pdf,.doc,.docx,.ppt,.pptx,.txt,.jpg,.jpeg,.png,.gif,.zip"
-                    onChange={(e) => handleFileSelected(e.target.files?.[0])}
-                  />
-                </motion.div>
+                  <Upload className={`w-10 h-10 mx-auto mb-4 transition-colors ${isDragOver ? 'text-[#4B2676]' : 'text-gray-300'}`} />
+                  <p className="text-sm font-bold text-[#1E1B4B]">Drag your file here</p>
+                  <p className="text-xs text-gray-400 mt-1 mb-4">or click to browse your computer</p>
+                  <Button variant="secondary" size="sm" onClick={() => fileInputRef.current?.click()} className="rounded-xl font-bold bg-white border-gray-200">
+                    Choose File
+                  </Button>
+                  <input ref={fileInputRef} type="file" className="hidden" onChange={(e) => handleFileSelected(e.target.files?.[0])} />
+                </div>
 
                 <AnimatePresence>
                   {selectedFile && (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.95, y: 4 }}
-                      animate={{ opacity: 1, scale: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.95, y: -4 }}
-                      transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                      className="flex items-center justify-between gap-3 bg-indigo-50 border border-indigo-200 rounded-lg px-3 py-2"
-                    >
-                      <div className="flex items-center gap-2 min-w-0">
-                        <SelectedFileIcon className="w-4 h-4 text-indigo-600 flex-shrink-0" />
+                    <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} className="flex items-center justify-between p-4 rounded-2xl bg-indigo-50 border border-indigo-100">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <SelectedFileIcon className="w-5 h-5 text-[#4B2676]" />
                         <div className="min-w-0">
-                          <p className="text-sm text-gray-900 truncate">{selectedFile.name}</p>
-                          <p className="text-xs text-gray-600">{formatBytes(selectedFile.size)}</p>
+                          <p className="text-sm font-bold text-[#1E1B4B] truncate">{selectedFile.name}</p>
+                          <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">{formatBytes(selectedFile.size)}</p>
                         </div>
                       </div>
-                      <button
-                        type="button"
-                        className="text-sm text-gray-600 hover:text-gray-900"
-                        onClick={() => setSelectedFile(null)}
-                        aria-label="Remove file"
-                      >
-                        ×
+                      <button onClick={() => setSelectedFile(null)} className="p-1.5 hover:bg-white rounded-lg transition-colors">
+                        <X className="w-4 h-4 text-gray-400" />
                       </button>
                     </motion.div>
                   )}
                 </AnimatePresence>
 
-                {draft && submission?.file_url && !selectedFile && (
-                  <div className="flex items-center justify-between gap-3 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <ExistingFileIcon className="w-4 h-4 text-gray-600 flex-shrink-0" />
-                      <div className="min-w-0">
-                        <p className="text-sm text-gray-900 truncate">{submission.file_name || 'Previously attached file'}</p>
-                        <a
-                          href={submission.file_url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-xs text-indigo-600 hover:underline"
-                        >
-                          Open
-                        </a>
-                      </div>
-                    </div>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => fileInputRef.current?.click()}
-                    >
-                      Replace
-                    </Button>
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <hr className="flex-1 border-gray-100" />
+                    <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest">Link</span>
+                    <hr className="flex-1 border-gray-100" />
                   </div>
-                )}
-
-                <div className="flex items-center gap-3">
-                  <hr className="flex-1 border-gray-200" />
-                  <span className="text-xs text-gray-500">or</span>
-                  <hr className="flex-1 border-gray-200" />
-                </div>
-
-                <div className="space-y-2">
-                  <p className="text-sm font-medium text-gray-900">Add Google Drive link</p>
                   <Input
                     value={driveLink}
                     onChange={(e) => setDriveLink(e.target.value)}
-                    placeholder="Paste Google Drive link..."
+                    placeholder="Paste Drive link here..."
                     icon={LinkIcon}
-                    error={driveInvalid ? 'Must be a Google Drive link' : undefined}
+                    className="rounded-xl border-gray-100"
+                    error={driveInvalid ? 'Please enter a valid Google Drive URL' : undefined}
                   />
-
-                  {driveValid && (
-                    <p className="text-xs text-emerald-700 flex items-center gap-1.5">
-                      <CheckCircle className="w-3.5 h-3.5" /> Drive link added
-                    </p>
-                  )}
-
-                  {driveValid && (
-                    <div className="border border-amber-200 bg-amber-50 rounded-lg p-2.5 text-xs text-amber-900">
-                      Make sure your file is shared as “Anyone with the link can view”.
-                    </div>
-                  )}
                 </div>
 
-                <div>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    icon={<MessageSquare className="w-4 h-4" />}
-                    onClick={() => setShowComment((v) => !v)}
-                  >
-                    Add a comment (optional)
-                  </Button>
-
+                <div className="space-y-3">
+                  <button onClick={() => setShowComment(!showComment)} className="text-xs font-black text-[#4B2676] uppercase tracking-widest flex items-center gap-2 hover:opacity-70 transition-opacity">
+                    <MessageSquare className="w-3.5 h-3.5" /> {showComment ? 'Hide Comment' : 'Add private comment'}
+                  </button>
                   <AnimatePresence>
                     {showComment && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="mt-2 overflow-hidden"
-                      >
-                        <Textarea
-                          rows="2"
-                          placeholder="Add a private comment to your teacher..."
-                          value={textComment}
-                          onChange={(e) => setTextComment(e.target.value)}
-                        />
+                      <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+                        <Textarea rows="3" placeholder="Write a note to your teacher..." value={textComment} onChange={(e) => setTextComment(e.target.value)} className="rounded-xl text-sm" />
                       </motion.div>
                     )}
                   </AnimatePresence>
@@ -564,93 +351,43 @@ export default function StudentAssignmentDetail() {
 
                 <Button
                   variant="primary"
-                  className="w-full !from-green-700 !to-green-700 hover:!from-green-800 hover:!to-green-800"
-                  icon={<Upload className="w-4 h-4" />}
+                  className="w-full py-5 rounded-[1.5rem] font-black bg-[#4B2676] text-white shadow-xl shadow-indigo-100 disabled:opacity-50 disabled:shadow-none transition-all hover:scale-[1.02]"
                   disabled={!canTurnIn || submitMutation.isPending}
-                  isLoading={submitMutation.isPending}
                   onClick={() => setTurnInConfirmOpen(true)}
                 >
-                  Turn in
+                  <Upload className="w-5 h-5 mr-2" /> Turn In Now
                 </Button>
               </div>
             )}
-
-            {/* Confirm modals */}
-            <Modal
-              isOpen={turnInConfirmOpen}
-              onClose={() => setTurnInConfirmOpen(false)}
-              title="Turn in assignment?"
-              footer={
-                <>
-                  <Button variant="ghost" onClick={() => setTurnInConfirmOpen(false)}>
-                    Cancel
-                  </Button>
-                  <Button
-                    variant="primary"
-                    className="!from-green-700 !to-green-700 hover:!from-green-800 hover:!to-green-800"
-                    onClick={handleTurnIn}
-                    disabled={!canTurnIn || submitMutation.isPending}
-                    isLoading={submitMutation.isPending}
-                  >
-                    Turn in
-                  </Button>
-                </>
-              }
-            >
-              <div className="space-y-3">
-                <p className="text-sm text-gray-700">
-                  <span className="font-medium">{assignment?.title}</span>
-                </p>
-                <p className="text-sm text-gray-600">
-                  This will submit your work{teacherName ? ` to ${teacherName}` : ''}.
-                </p>
-
-                {selectedFile && (
-                  <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
-                    <SelectedFileIcon className="w-4 h-4 text-indigo-600" />
-                    <span className="text-sm text-gray-900">{selectedFile.name}</span>
-                    <span className="text-xs text-gray-500">({formatBytes(selectedFile.size)})</span>
-                  </div>
-                )}
-
-                {driveValid && (
-                  <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
-                    <LinkIcon className="w-4 h-4 text-gray-700" />
-                    <span className="text-sm text-gray-900 truncate">{driveLink.trim()}</span>
-                  </div>
-                )}
-              </div>
-            </Modal>
-
-            <Modal
-              isOpen={unsubmitConfirmOpen}
-              onClose={() => setUnsubmitConfirmOpen(false)}
-              title="Unsubmit assignment?"
-              footer={
-                <>
-                  <Button variant="ghost" onClick={() => setUnsubmitConfirmOpen(false)}>
-                    Cancel
-                  </Button>
-                  <Button
-                    variant="danger"
-                    onClick={handleUnsubmit}
-                    disabled={unsubmitMutation.isPending}
-                    isLoading={unsubmitMutation.isPending}
-                  >
-                    Unsubmit
-                  </Button>
-                </>
-              }
-            >
-              <div className="space-y-2">
-                <p className="text-sm text-gray-700">
-                  Your teacher will be notified. You can turn it in again before it’s graded.
-                </p>
-              </div>
-            </Modal>
           </Card>
         </div>
       </div>
+
+      {/* Modals */}
+      <Modal isOpen={turnInConfirmOpen} onClose={() => setTurnInConfirmOpen(false)} title="Submit Assignment?">
+        <div className="space-y-4 pt-4">
+          <p className="text-sm font-medium text-gray-600 leading-relaxed">
+            Ready to submit your work for <span className="font-black text-[#1E1B4B]">{assignment?.title}</span>? 
+            {teacherName && ` Your instructor Prof. ${teacherName} will be notified.`}
+          </p>
+          <div className="flex gap-3">
+            <Button onClick={handleTurnIn} className="flex-1 bg-[#4B2676] text-white py-3 rounded-xl font-bold">Turn In</Button>
+            <Button variant="secondary" onClick={() => setTurnInConfirmOpen(false)} className="flex-1 py-3 rounded-xl font-bold">Cancel</Button>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal isOpen={unsubmitConfirmOpen} onClose={() => setUnsubmitConfirmOpen(false)} title="Unsubmit Work?">
+        <div className="space-y-4 pt-4">
+          <p className="text-sm font-medium text-gray-600 leading-relaxed">
+            Unsubmitting will allow you to make changes to your work. Don't forget to resubmit before the deadline!
+          </p>
+          <div className="flex gap-3">
+            <Button variant="danger" onClick={handleUnsubmit} className="flex-1 py-3 rounded-xl font-bold">Unsubmit</Button>
+            <Button variant="secondary" onClick={() => setUnsubmitConfirmOpen(false)} className="flex-1 py-3 rounded-xl font-bold">Cancel</Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { Card, Button, Input, Textarea, Modal, Loading } from '../../components/ui.jsx';
-import { AnimatePresence } from 'framer-motion';
+import { Card, Button, Input, Textarea, Modal, Loading, Badge } from '../../components/ui.jsx';
+import { AnimatePresence, motion } from 'framer-motion';
 import { 
   ArrowLeft, Download, FileText, MessageSquare, CheckCircle, 
-  AlertCircle, Clock, BookOpen, Users 
+  AlertCircle, Clock, BookOpen, Users, ChevronRight, PlayCircle, Award
 } from 'lucide-react';
 import { coursesAPI, assignmentsAPI, announcementsAPI, materialsAPI } from '../../api/client.js';
 import MaterialRow from '../../components/materials/MaterialRow.jsx';
@@ -26,12 +26,9 @@ export default function StudentCourseDetail() {
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('assignments'); // assignments, materials, announcements, people
   const [submissions, setSubmissions] = useState({});
-  const [comments, setComments] = useState({});
   const [showCommentModal, setShowCommentModal] = useState(false);
   const [selectedAnnouncement, setSelectedAnnouncement] = useState(null);
-
   const [videoModal, setVideoModal] = useState(null);
-
   const [commentContent, setCommentContent] = useState('');
 
   useEffect(() => {
@@ -53,7 +50,6 @@ export default function StudentCourseDetail() {
       setAnnouncements(announcementsRes.data);
       setMaterials(materialsRes.data);
 
-      // Fetch student submissions
       const submissionMap = {};
       for (const assignment of assignmentsRes.data) {
         try {
@@ -74,13 +70,11 @@ export default function StudentCourseDetail() {
 
   const onAddComment = async () => {
     if (!selectedAnnouncement) return;
-
     const validation = commentSchema.content(commentContent);
     if (validation !== true) {
       toast.error(typeof validation === 'string' ? validation : 'Comment cannot be empty');
       return;
     }
-
     try {
       await announcementsAPI.addComment(selectedAnnouncement.id, { content: commentContent });
       toast.success('Comment added!');
@@ -99,300 +93,320 @@ export default function StudentCourseDetail() {
     const isOverdue = now > dueDate;
 
     if (submission && submission.grade !== null) {
-      return { status: 'graded', color: 'text-green-600', icon: CheckCircle };
+      return { status: 'Graded', color: 'text-emerald-600', bg: 'bg-emerald-50', icon: CheckCircle };
     } else if (submission) {
-      return { status: 'submitted', color: 'text-blue-600', icon: CheckCircle };
+      return { status: 'Submitted', color: 'text-indigo-600', bg: 'bg-indigo-50', icon: CheckCircle };
     } else if (isOverdue) {
-      return { status: 'overdue', color: 'text-red-600', icon: AlertCircle };
+      return { status: 'Overdue', color: 'text-rose-600', bg: 'bg-rose-50', icon: AlertCircle };
     } else {
-      return { status: 'pending', color: 'text-yellow-600', icon: Clock };
+      return { status: 'Pending', color: 'text-amber-600', bg: 'bg-amber-50', icon: Clock };
     }
   };
-
-  if (isLoading) return <Loading />;
 
   const handleMaterialClick = (material) => {
     const url = material?.link_url;
     if (!url) return;
-
     if (isYouTubeUrl(url)) {
       const info = getYouTubeEmbedUrl(url);
       if (info) {
-        setVideoModal({
-          platform: 'youtube',
-          embedUrl: info.embedUrl,
-          title: material.title || 'Video',
-          thumbnailUrl: info.thumbnailUrl,
-        });
+        setVideoModal({ platform: 'youtube', embedUrl: info.embedUrl, title: material.title || 'Video', thumbnailUrl: info.thumbnailUrl });
         return;
       }
     }
-
     if (isGoogleDriveUrl(url)) {
       const info = extractVideoId(url);
       if (info?.embedUrl) {
-        setVideoModal({
-          platform: 'gdrive',
-          embedUrl: info.embedUrl,
-          title: material.title || 'Video',
-          thumbnailUrl: null,
-        });
+        setVideoModal({ platform: 'gdrive', embedUrl: info.embedUrl, title: material.title || 'Video', thumbnailUrl: null });
         return;
       }
     }
-
     window.open(url, '_blank', 'noopener,noreferrer');
   };
 
+  if (isLoading) return <Loading />;
+
   return (
-    <div>
+    <div className="p-6 space-y-8 animate-in fade-in duration-500">
       <Button
         variant="ghost"
         onClick={() => navigate(-1)}
-        className="mb-6 flex items-center gap-2"
+        className="flex items-center gap-2 font-bold text-gray-500 hover:text-[#4B2676] transition-colors"
       >
-        <ArrowLeft className="w-5 h-5" /> Back
+        <ArrowLeft className="w-5 h-5" /> Back to Dashboard
       </Button>
 
-      {/* Course Header */}
+      {/* Course Hero */}
       {course && (
         <div
-          className="rounded-xl p-8 text-white mb-8"
+          className="relative rounded-[2.5rem] p-10 md:p-14 overflow-hidden shadow-2xl shadow-indigo-100"
           style={{ backgroundColor: course.cover_color }}
         >
-          <h1 className="text-4xl font-bold mb-2">{course.title}</h1>
-          <p className="text-lg opacity-90">
-            {course.subject && `${course.subject} • `}Section {course.section}
-          </p>
+          {/* Decorative background elements */}
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-20 -mt-20 blur-3xl" />
+          <div className="absolute bottom-0 left-0 w-48 h-48 bg-black/5 rounded-full -ml-10 -mb-10 blur-2xl" />
+          
+          <div className="relative z-10">
+            <Badge className="bg-white/20 text-white backdrop-blur-md px-4 py-1.5 rounded-full font-black text-[10px] uppercase tracking-[0.2em] mb-4">
+              {course.subject} • Section {course.section}
+            </Badge>
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white tracking-tight mb-4 leading-tight">
+              {course.title}
+            </h1>
+            <div className="flex items-center gap-4 text-white/80 font-bold">
+              <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+                <Users className="w-5 h-5" />
+              </div>
+              <span>Taught by <span className="text-white">Prof. {course.first_name} {course.last_name}</span></span>
+            </div>
+          </div>
         </div>
       )}
 
-      {/* Tabs */}
-      <div className="flex gap-4 mb-8 border-b border-gray-200">
+      {/* Tab Navigation */}
+      <div className="flex flex-wrap gap-2 p-1.5 bg-gray-100 rounded-2xl w-fit">
         {[
-          { tab: 'assignments', label: 'Assignments' },
-          { tab: 'materials', label: 'Materials' },
-          { tab: 'announcements', label: 'Announcements' },
-          { tab: 'people', label: 'People' },
+          { tab: 'assignments', label: 'Assignments', icon: FileText },
+          { tab: 'materials', label: 'Materials', icon: BookOpen },
+          { tab: 'announcements', label: 'Announcements', icon: MessageSquare },
+          { tab: 'people', label: 'People', icon: Users },
         ].map((item) => (
           <button
             key={item.tab}
             onClick={() => setActiveTab(item.tab)}
-            className={`px-4 py-3 font-semibold transition-colors ${
+            className={`flex items-center gap-2 px-6 py-3 rounded-xl font-black text-sm transition-all duration-300 ${
               activeTab === item.tab
-                ? 'text-indigo-600 border-b-2 border-indigo-600'
-                : 'text-gray-600 hover:text-gray-900'
+                ? 'bg-white text-[#4B2676] shadow-sm'
+                : 'text-gray-500 hover:text-[#4B2676]'
             }`}
           >
+            <item.icon className="w-4 h-4" />
             {item.label}
           </button>
         ))}
       </div>
 
-      {/* Assignments Tab */}
-      {activeTab === 'assignments' && (
-        <div className="space-y-6">
-          {assignments.length === 0 ? (
-            <Card className="text-center py-12">
-              <FileText className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-600">No assignments yet</p>
-            </Card>
-          ) : (
-            assignments.map((assignment) => {
-              const statusInfo = getAssignmentStatus(assignment);
-              const StatusIcon = statusInfo.icon;
-              const submission = submissions[assignment.id];
-              const dueDate = new Date(assignment.due_date).toLocaleDateString();
-
-              return (
-                <Card key={assignment.id} className="p-6">
-                  <div className="flex gap-6">
-                    <div className={`${statusInfo.color}`}>
-                      <StatusIcon className="w-8 h-8" />
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex justify-between items-start mb-2">
-                        <h3 className="text-lg font-bold text-gray-900">
-                          {assignment.title}
-                        </h3>
-                        <span className="text-sm font-semibold text-gray-600">
-                          {assignment.points} pts
-                        </span>
-                      </div>
-                      <p className="text-gray-600 text-sm mb-4">
-                        {assignment.instructions}
-                      </p>
-                      <div className="flex gap-4 items-center text-sm text-gray-600 mb-4">
-                        <span>Due: {dueDate}</span>
-                        {submission && submission.grade !== null && (
-                          <span className="text-green-600 font-semibold">
-                            Grade: {submission.grade}/{assignment.points}
-                          </span>
-                        )}
-                      </div>
-                      {submission && submission.feedback && (
-                        <div className="bg-blue-50 border-l-4 border-blue-500 p-3 mb-4">
-                          <p className="text-sm font-semibold text-blue-900 mb-1">
-                            Teacher Feedback:
-                          </p>
-                          <p className="text-sm text-blue-800">
-                            {submission.feedback}
-                          </p>
-                        </div>
-                      )}
-
-                      {submission && (submission.file_url || submission.drive_link || submission.link_url) && (
-                        <div className="bg-gray-50 border border-gray-100 rounded-lg p-3 mb-4 space-y-2">
-                          {submission.file_url && (
-                            <a
-                              href={submission.file_url}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="block text-sm text-indigo-600 hover:underline"
-                            >
-                              Open your submitted file
-                            </a>
-                          )}
-                          {(submission.drive_link || submission.link_url) && (
-                            <a
-                              href={submission.drive_link || submission.link_url}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="block text-sm text-indigo-600 hover:underline"
-                            >
-                              Open your submitted link
-                            </a>
-                          )}
-                        </div>
-                      )}
-                      <Button
-                        variant={submission ? 'secondary' : 'primary'}
-                        size="sm"
-                        onClick={() => navigate(`/student/assignment/${assignment.id}`)}
-                      >
-                        {submission ? 'View / Resubmit' : 'Turn in'}
-                      </Button>
-                    </div>
-                  </div>
-                </Card>
-              );
-            })
-          )}
-        </div>
-      )}
-
-      {/* Materials Tab */}
-      {activeTab === 'materials' && (
-        <div className="space-y-6">
-          {materials.length === 0 ? (
-            <Card className="text-center py-12">
-              <BookOpen className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-600">No materials yet</p>
-            </Card>
-          ) : (
-            <div className="bg-white rounded-[12px] border border-[#E8E6F0] overflow-visible">
-              {materials.map((material) => (
-                <MaterialRow
-                  key={material.id}
-                  material={material}
-                  onClick={() => handleMaterialClick(material)}
-                />
-              ))}
-            </div>
-          )}
-
-          <AnimatePresence>
-            {videoModal && (
-              <YouTubeModal
-                embedUrl={videoModal.embedUrl}
-                title={videoModal.title}
-                platform={videoModal.platform}
-                onClose={() => setVideoModal(null)}
-              />
-            )}
-          </AnimatePresence>
-        </div>
-      )}
-
-      {/* Announcements Tab */}
-      {activeTab === 'announcements' && (
-        <div className="space-y-6">
-          {announcements.length === 0 ? (
-            <Card className="text-center py-12">
-              <MessageSquare className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-600">No announcements yet</p>
-            </Card>
-          ) : (
-            announcements.map((announcement) => (
-              <Card key={announcement.id} className="p-6">
-                <div className="flex justify-between items-start mb-3">
-                  <h3 className="text-lg font-bold text-gray-900">
-                    {announcement.title}
-                  </h3>
-                  <span className="text-xs text-gray-500">
-                    {new Date(announcement.created_at).toLocaleDateString()}
-                  </span>
-                </div>
-                <p className="text-gray-700 mb-4">{announcement.content}</p>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => {
-                    setSelectedAnnouncement(announcement);
-                    setShowCommentModal(true);
-                  }}
-                  className="flex items-center gap-2"
-                >
-                  <MessageSquare className="w-4 h-4" /> Comment
-                </Button>
+      <div className="max-w-5xl">
+        {/* Assignments Tab */}
+        {activeTab === 'assignments' && (
+          <div className="grid gap-6">
+            {assignments.length === 0 ? (
+              <Card glass className="text-center py-20 rounded-[2rem]">
+                <FileText className="w-16 h-16 text-gray-200 mx-auto mb-6" />
+                <h3 className="text-xl font-bold text-[#1E1B4B]">No assignments yet</h3>
+                <p className="text-gray-500">Check back later for new tasks from your instructor.</p>
               </Card>
-            ))
-          )}
-        </div>
-      )}
+            ) : (
+              assignments.map((assignment, idx) => {
+                const statusInfo = getAssignmentStatus(assignment);
+                const submission = submissions[assignment.id];
+                
+                return (
+                  <motion.div
+                    key={assignment.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: idx * 0.1 }}
+                  >
+                    <Card glass className="p-8 rounded-[2rem] border-gray-100 hover:border-[#4B2676]/20 transition-all duration-300">
+                      <div className="flex flex-col md:flex-row items-start gap-8">
+                        <div className={`w-14 h-14 rounded-2xl ${statusInfo.bg} ${statusInfo.color} flex items-center justify-center shrink-0`}>
+                          <statusInfo.icon className="w-7 h-7" />
+                        </div>
+                        
+                        <div className="flex-1 min-w-0">
+                          <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+                            <div>
+                              <h3 className="text-2xl font-black text-[#1E1B4B] mb-1">{assignment.title}</h3>
+                              <div className="flex items-center gap-3 text-xs font-black text-gray-400 uppercase tracking-widest">
+                                <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" /> Due {new Date(assignment.due_date).toLocaleDateString()}</span>
+                                <span>•</span>
+                                <span className="flex items-center gap-1.5"><Award className="w-3.5 h-3.5" /> {assignment.points} Points</span>
+                              </div>
+                            </div>
+                            <Badge className={`${statusInfo.bg} ${statusInfo.color} px-4 py-1.5 rounded-xl font-black text-[10px] uppercase tracking-widest`}>
+                              {statusInfo.status}
+                            </Badge>
+                          </div>
 
-      {/* People Tab */}
-      {activeTab === 'people' && (
-        <Card className="p-6">
-          <div className="flex items-center gap-3 mb-4">
-            <Users className="w-6 h-6 text-indigo-600" />
-            <h3 className="text-lg font-bold">Classmates</h3>
+                          <p className="text-gray-600 leading-relaxed mb-6 font-medium">
+                            {assignment.instructions}
+                          </p>
+
+                          {submission?.feedback && (
+                            <div className="bg-indigo-50/50 p-5 rounded-2xl border border-indigo-100 mb-6">
+                              <p className="text-[10px] font-black text-[#4B2676] uppercase tracking-widest mb-1">Teacher Feedback</p>
+                              <p className="text-sm text-[#4B2676] font-medium leading-relaxed italic">"{submission.feedback}"</p>
+                            </div>
+                          )}
+
+                          <div className="flex flex-wrap items-center gap-4">
+                            <Button
+                              variant={submission ? 'secondary' : 'primary'}
+                              onClick={() => navigate(`/student/assignment/${assignment.id}`)}
+                              className={`px-8 py-3 rounded-xl font-black text-sm transition-all ${submission ? 'text-[#4B2676] border-2 border-indigo-50 hover:bg-indigo-50' : 'bg-[#4B2676] text-white'}`}
+                            >
+                              {submission ? 'View Submission' : 'Submit Assignment'}
+                            </Button>
+                            {submission && submission.grade !== null && (
+                              <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-100">
+                                <Award className="w-4 h-4" />
+                                <span className="text-sm font-black">Grade: {submission.grade} / {assignment.points}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </Card>
+                  </motion.div>
+                );
+              })
+            )}
           </div>
-          <p className="text-gray-600">
-            {course?.enrollments?.length || 0} students enrolled in this class
-          </p>
-        </Card>
-      )}
+        )}
 
-      {/* Add Comment Modal */}
+        {/* Materials Tab */}
+        {activeTab === 'materials' && (
+          <div className="space-y-6">
+            {materials.length === 0 ? (
+              <Card glass className="text-center py-20 rounded-[2rem]">
+                <BookOpen className="w-16 h-16 text-gray-200 mx-auto mb-6" />
+                <h3 className="text-xl font-bold text-[#1E1B4B]">No materials yet</h3>
+                <p className="text-gray-500">Your teacher hasn't uploaded any resources yet.</p>
+              </Card>
+            ) : (
+              <Card glass className="overflow-hidden rounded-[2rem] border-gray-100">
+                <div className="divide-y divide-gray-50">
+                  {materials.map((material) => (
+                    <div 
+                      key={material.id} 
+                      onClick={() => handleMaterialClick(material)}
+                      className="group p-6 flex items-center justify-between hover:bg-indigo-50/30 cursor-pointer transition-all duration-300"
+                    >
+                      <div className="flex items-center gap-6">
+                        <div className="w-12 h-12 rounded-xl bg-white shadow-sm border border-gray-100 flex items-center justify-center text-[#4B2676] group-hover:scale-110 transition-transform">
+                          {isYouTubeUrl(material.link_url) ? <PlayCircle className="w-6 h-6" /> : <FileText className="w-6 h-6" />}
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-[#1E1B4B] group-hover:text-[#4B2676] transition-colors">{material.title}</h4>
+                          <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-0.5">{material.type || 'Document'}</p>
+                        </div>
+                      </div>
+                      <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-[#4B2676] group-hover:translate-x-1 transition-all" />
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            )}
+
+            <AnimatePresence>
+              {videoModal && (
+                <YouTubeModal
+                  embedUrl={videoModal.embedUrl}
+                  title={videoModal.title}
+                  platform={videoModal.platform}
+                  onClose={() => setVideoModal(null)}
+                />
+              )}
+            </AnimatePresence>
+          </div>
+        )}
+
+        {/* Announcements Tab */}
+        {activeTab === 'announcements' && (
+          <div className="space-y-6">
+            {announcements.length === 0 ? (
+              <Card glass className="text-center py-20 rounded-[2rem]">
+                <MessageSquare className="w-16 h-16 text-gray-200 mx-auto mb-6" />
+                <h3 className="text-xl font-bold text-[#1E1B4B]">No announcements</h3>
+                <p className="text-gray-500">Check here for updates from your professor.</p>
+              </Card>
+            ) : (
+              announcements.map((announcement) => (
+                <Card key={announcement.id} glass className="p-8 rounded-[2rem] border-gray-100">
+                  <div className="flex justify-between items-start mb-6">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-indigo-50 text-[#4B2676] flex items-center justify-center">
+                        <MessageSquare className="w-5 h-5" />
+                      </div>
+                      <h3 className="text-xl font-bold text-[#1E1B4B]">{announcement.title}</h3>
+                    </div>
+                    <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+                      {new Date(announcement.created_at).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <p className="text-gray-600 font-medium leading-relaxed mb-8">{announcement.content}</p>
+                  <Button
+                    variant="secondary"
+                    onClick={() => {
+                      setSelectedAnnouncement(announcement);
+                      setShowCommentModal(true);
+                    }}
+                    className="px-6 py-2.5 rounded-xl font-black text-xs text-[#4B2676] border-2 border-indigo-50 hover:bg-indigo-50 flex items-center gap-2"
+                  >
+                    <MessageSquare className="w-4 h-4" /> Add Comment
+                  </Button>
+                </Card>
+              ))
+            )}
+          </div>
+        )}
+
+        {/* People Tab */}
+        {activeTab === 'people' && (
+          <Card glass className="p-10 rounded-[2rem] border-gray-100 flex flex-col items-center text-center">
+            <div className="w-20 h-20 bg-indigo-50 text-[#4B2676] rounded-[2rem] flex items-center justify-center mb-6">
+              <Users className="w-10 h-10" />
+            </div>
+            <h3 className="text-2xl font-black text-[#1E1B4B] mb-2">Class Community</h3>
+            <p className="text-gray-500 font-medium mb-8">You are learning with {course?.enrollments?.length || 0} other students in this section.</p>
+            <div className="flex flex-wrap justify-center gap-2">
+              {[...Array(Math.min(course?.enrollments?.length || 0, 5))].map((_, i) => (
+                <div key={i} className="w-12 h-12 rounded-2xl bg-gray-100 border-4 border-white shadow-sm flex items-center justify-center text-gray-400">
+                  <Users className="w-5 h-5" />
+                </div>
+              ))}
+              {(course?.enrollments?.length || 0) > 5 && (
+                <div className="w-12 h-12 rounded-2xl bg-[#4B2676] border-4 border-white shadow-sm flex items-center justify-center text-white text-xs font-black">
+                  +{(course?.enrollments?.length || 0) - 5}
+                </div>
+              )}
+            </div>
+          </Card>
+        )}
+      </div>
+
+      {/* Comment Modal */}
       {showCommentModal && selectedAnnouncement && (
-        <Modal isOpen={true} onClose={() => setShowCommentModal(false)} title={`Comment on: ${selectedAnnouncement.title}`} size="xl">
-          <div className="mb-6">
-            <p className="text-sm text-gray-600">Share your thoughts with the class.</p>
-          </div>
-
-          <Textarea
-            label="Your Comment"
-            placeholder="Share your thoughts..."
-            value={commentContent}
-            onChange={(e) => setCommentContent(e.target.value)}
-          />
-
-          <div className="flex gap-3 mt-6">
-            <Button type="button" variant="primary" onClick={onAddComment}>
-              Post Comment
-            </Button>
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={() => {
-                setShowCommentModal(false);
-                setSelectedAnnouncement(null);
-                setCommentContent('');
-              }}
-            >
-              Cancel
-            </Button>
+        <Modal 
+          isOpen={true} 
+          onClose={() => setShowCommentModal(false)} 
+          title={`Discussion: ${selectedAnnouncement.title}`} 
+          size="xl"
+        >
+          <div className="space-y-6 pt-4">
+            <Textarea
+              label="Join the Conversation"
+              placeholder="What are your thoughts?"
+              value={commentContent}
+              onChange={(e) => setCommentContent(e.target.value)}
+              className="rounded-2xl"
+            />
+            <div className="flex gap-3">
+              <Button onClick={onAddComment} className="bg-[#4B2676] text-white px-8 rounded-xl font-bold">
+                Post Comment
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setShowCommentModal(false);
+                  setSelectedAnnouncement(null);
+                  setCommentContent('');
+                }}
+                className="px-8 rounded-xl font-bold"
+              >
+                Cancel
+              </Button>
+            </div>
           </div>
         </Modal>
       )}
