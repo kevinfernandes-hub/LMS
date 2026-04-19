@@ -84,6 +84,19 @@ app.use((err, req, res, next) => {
   });
 });
 
+// Serve frontend static files in production
+if (process.env.NODE_ENV === 'production') {
+  const frontendPath = path.join(__dirname, '../../frontend/dist');
+  app.use(express.static(frontendPath));
+  
+  app.get('*', (req, res) => {
+    // If not an API route, serve the frontend's index.html
+    if (!req.path.startsWith('/api')) {
+      res.sendFile(path.join(frontendPath, 'index.html'));
+    }
+  });
+}
+
 // Start server
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
