@@ -1,0 +1,26 @@
+# Render Blueprint for Monorepo LMS (Frontend + Backend)
+# Docs: https://render.com/docs/yaml-spec
+
+services:
+  - type: web
+    name: lms-monorepo
+    env: node
+    plan: free
+    buildCommand: |
+      cd frontend && npm install && npm run build && cd ../backend && npm install
+    startCommand: cd backend && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false # Set in Render dashboard
+      - key: JWT_SECRET
+        sync: false # Set in Render dashboard
+      - key: FRONTEND_URL
+        value: https://lms-3myw.onrender.com
+      - key: VITE_API_URL
+        value: /api
+    autoDeploy: true
+    rootDir: .
+    # Optionally, set healthCheckPath if your backend exposes /api/health
+    healthCheckPath: /api/health
