@@ -28,9 +28,21 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Production Middleware
-app.use(helmet({
-  crossOriginResourcePolicy: { policy: "cross-origin" }
-}));
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'"],
+        styleSrc: ["'self'", "https://fonts.googleapis.com"],
+        fontSrc: ["'self'", "https://fonts.gstatic.com"],
+        imgSrc: ["'self'"],
+        connectSrc: ["'self'", process.env.FRONTEND_URL],
+      },
+    },
+  })
+);
 app.use(compression());
 
 // Rate limiting
@@ -47,8 +59,8 @@ app.use('/api/', limiter);
 
 // Middleware
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? process.env.FRONTEND_URL 
+  origin: process.env.NODE_ENV === 'production'
+    ? process.env.FRONTEND_URL
     : ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175', 'http://localhost:5176'],
   credentials: true
 }));
@@ -79,8 +91,8 @@ app.get('/api/health', (req, res) => {
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error('Error:', err);
-  res.status(500).json({ 
-    error: process.env.NODE_ENV === 'production' ? 'Internal server error' : err.message 
+  res.status(500).json({
+    error: process.env.NODE_ENV === 'production' ? 'Internal server error' : err.message
   });
 });
 
@@ -88,7 +100,7 @@ app.use((err, req, res, next) => {
 if (process.env.NODE_ENV === 'production') {
   const frontendPath = path.join(__dirname, '../../frontend/dist');
   app.use(express.static(frontendPath));
-  
+
   app.get('*', (req, res) => {
     // If not an API route, serve the frontend's index.html
     if (!req.path.startsWith('/api')) {
